@@ -1,0 +1,332 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum FunctionalGroup {
+  WHERE_TO_GO     // Đi đâu?
+  WHAT_TO_EAT     // Ăn gì?
+  WHERE_TO_STAY   // Ở đâu?
+  WHAT_TO_DO      // Trải nghiệm gì?
+  WHAT_TO_BUY     // Mua gì?
+  HOW_TO_GET      // Đi thế nào?
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        RoleName @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+
+  @@map("roles")
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  passwordHash  String
+  fullName      String
+  avatarUrl     String?
+  isLocked      Boolean     @default(false)
+  roleId        String
+  role          Role        @relation(fields: [roleId], references: [id])
+  favorites     Favorite[]
+  reviews       Review[]
+  itineraries   Itinerary[]
+  searchHistory Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("users")
+}
+
+model Region {
+  id                String        @id @default(cuid())
+  name              String
+  slug              String        @unique
+  historicalNames   String[]      // Lưu tên địa phương/lịch sử quen thuộc
+  avatarUrl         String?
+  coverUrl          String?
+  description       String
+  culturalHistory   String?       @db.Text
+  centerLatitude    Float
+  centerLongitude   Float
+  isActive          Boolean       @default(true)
+  destinations      Destination[]
+  restaurants       Restaurant[]
+  hotels            Hotel[]
+  attractions       Attraction[]
+  experiences       Experience[]
+  specialties       Specialty[]
+  events            Event[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("regions")
+}
+
+model Category {
+  id              String          @id @default(cuid())
+  name            String
+  nameEn          String?
+  slug            String          @unique
+  functionalGroup FunctionalGroup
+  icon            String?
+  destinations    Destination[]
+
+  @@map("categories")
+}
+
+model Destination {
+  id              String             @id @default(cuid())
+  name            String
+  nameEn          String?
+  slug            String             @unique
+  shortDesc       String
+  detailedContent String             @db.Text
+  culturalHistory String?            @db.Text
+  address         String
+  latitude        Float
+  longitude       Float
+  openingHours    String?            // VD: "07:00 - 17:30"
+  ticketPrice     Int                @default(0) // VNĐ
+  priceLevel      Int                @default(1) // 1 - 4
+  phone           String?
+  website         String?
+  videoUrl        String?
+  googleMapsUrl   String?
+  googlePlaceId   String?
+  rating          Float              @default(0)
+  reviewCount     Int                @default(0)
+  popularityScore Int                @default(0)
+  tags            String[]           // nature, island, spiritual, history, food, resort, culture
+  isFeatured      Boolean            @default(false)
+  isVisible       Boolean            @default(true)
+  isDemo          Boolean            @default(false)
+  displayOrder    Int                @default(0)
+  regionId        String
+  region          Region             @relation(fields: [regionId], references: [id])
+  categoryId      String
+  category        Category           @relation(fields: [categoryId], references: [id])
+  images          DestinationImage[]
+  reviews         Review[]
+  favorites       Favorite[]
+  itineraryStops  ItineraryStop[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([regionId, categoryId])
+  @@map("destinations")
+}
+
+model DestinationImage {
+  id            String      @id @default(cuid())
+  url           String
+  caption       String?
+  isPrimary     Boolean     @default(false)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@map("destination_images")
+}
+
+model Restaurant {
+  id                String   @id @default(cuid())
+  name              String
+  type              String   // Nhà hàng, Quán ăn địa phương, Quán cà phê, Quán đặc sản
+  address           String
+  latitude          Float
+  longitude         Float
+  priceRange        String   // VD: "40.000đ - 150.000đ"
+  avgCostPerPerson  Int      @default(80000)
+  signatureDishes   String[]
+  openingHours      String?
+  phone             String?
+  googlePlaceId     String?
+  images            String[]
+  rating            Float    @default(0)
+  reviewCount       Int      @default(0)
+  isDemo            Boolean  @default(false)
+  isVisible         Boolean  @default(true)
+  regionId          String
+  region            Region   @relation(fields: [regionId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@index([latitude, longitude])
+  @@map("restaurants")
+}
+
+model Hotel {
+  id               String   @id @default(cuid())
+  name             String
+  type             String   // Khách sạn, Resort, Homestay, Nhà nghỉ, Khu nghỉ dưỡng
+  address          String
+  latitude         Float
+  longitude        Float
+  pricePerNight    Int      // VNĐ
+  amenities        String[]
+  phone            String?
+  googlePlaceId    String?
+  images           String[]
+  rating           Float    @default(0)
+  isDemo           Boolean  @default(false)
+  isVisible        Boolean  @default(true)
+  regionId         String
+  region           Region   @relation(fields: [regionId], references: [id])
+  createdAt        DateTime @default(now())
+
+  @@index([latitude, longitude])
+  @@map("hotels")
+}
+
+model Attraction {
+  id               String   @id @default(cuid())
+  name             String
+  subType          String   // Danh thắng, Di tích, Biển đảo, Khu vui chơi
+  address          String
+  latitude         Float
+  longitude        Float
+  ticketPrice      Int      @default(0)
+  openingHours     String?
+  images           String[]
+  regionId         String
+  region           Region   @relation(fields: [regionId], references: [id])
+
+  @@map("attractions")
+}
+
+model Experience {
+  id               String   @id @default(cuid())
+  name             String
+  type             String   // Lễ hội, Làng nghề, Văn hóa, Sinh thái, Biển đảo, Tâm linh
+  eventTime        String?
+  description      String   @db.Text
+  latitude         Float
+  longitude        Float
+  images           String[]
+  regionId         String
+  region           Region   @relation(fields: [regionId], references: [id])
+
+  @@map("experiences")
+}
+
+model Specialty {
+  id               String   @id @default(cuid())
+  name             String
+  description      String   @db.Text
+  origin           String
+  famousArea       String
+  whereToBuy       String
+  referencePrice   String
+  images           String[]
+  regionId         String
+  region           Region   @relation(fields: [regionId], references: [id])
+
+  @@map("specialties")
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  rating        Int         // 1 - 5
+  comment       String      @db.Text
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@map("reviews")
+}
+
+model Itinerary {
+  id              String          @id @default(cuid())
+  title           String
+  startPoint      String
+  targetRegion    String
+  startDate       DateTime
+  daysCount       Int
+  dailyStartTime  String          @default("07:00")
+  transportMode   String          // MOTORBIKE, CAR, WALKING
+  budget          Int
+  peopleCount     Int             @default(1)
+  preferences     String[]
+  estimatedCost   Int             @default(0)
+  isPublic        Boolean         @default(false)
+  shareToken      String          @unique @default(cuid())
+  userId          String?
+  user            User?           @relation(fields: [userId], references: [id])
+  stops           ItineraryStop[]
+  createdAt       DateTime        @default(now())
+
+  @@map("itineraries")
+}
+
+model ItineraryStop {
+  id                  String       @id @default(cuid())
+  dayNumber           Int
+  orderIndex          Int
+  startTime           String       // VD: "08:00"
+  endTime             String       // VD: "10:00"
+  activityType        String       // BREAKFAST, VISIT, LUNCH, CAFE, DINNER, REST
+  customTitle         String
+  notes               String?
+  distanceFromPrevKm  Float        @default(0)
+  travelTimeMinutes   Int          @default(0)
+  estimatedCost       Int          @default(0)
+  latitude            Float
+  longitude           Float
+  destinationId       String?
+  destination         Destination? @relation(fields: [destinationId], references: [id])
+  itineraryId         String
+  itinerary           Itinerary    @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+
+  @@map("itinerary_stops")
+}
+
+model Favorite {
+  id            String      @id @default(cuid())
+  listName      String      @default("Yêu thích") // Yêu thích / Muốn đến
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([userId, destinationId, listName])
+  @@map("favorites")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  startDate   DateTime
+  endDate     DateTime
+  description String   @db.Text
+  images      String[]
+  regionId    String
+  region      Region   @relation(fields: [regionId], references: [id])
+
+  @@map("events")
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}
