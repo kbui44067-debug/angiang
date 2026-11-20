@@ -1,5 +1,4 @@
 // VỊ TRÍ FILE: src/app/page.tsx
-
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
@@ -60,6 +59,7 @@ type FunctionalTab =
   | "NHA_NGHI"
   | "MUA_SAM"
   | "LE_HOI"
+  | "OCOP"
   | "HANH_TRINH"
   | "CAM_NANG"
   | "ADMIN";
@@ -667,15 +667,11 @@ function SearchableRegionSelect({
   const filteredRegions = useMemo(() => {
     const q = removeVietnameseTones(keyword);
     if (!q) return orderedRegions;
-  const filteredRegions = useMemo(() => {
-    const q = removeVietnameseTones(keyword);
-    if (!q) return regions;
 
     const startsWithList: RegionItem[] = [];
     const includesList: RegionItem[] = [];
 
     orderedRegions.forEach((reg) => {
-    regions.forEach((reg) => {
       const cleanName = removeVietnameseTones(reg.name);
       const cleanLabel = removeVietnameseTones(reg.displayLabel);
       const initials = cleanName
@@ -701,7 +697,6 @@ function SearchableRegionSelect({
 
     return [...startsWithList, ...includesList];
   }, [orderedRegions, keyword]);
-  }, [regions, keyword]);
 
   const selectedDisplay = useMemo(() => {
     if (includeAllOption && value === "ALL") {
@@ -752,7 +747,6 @@ function SearchableRegionSelect({
                   }
                 }}
                 placeholder="Tìm Kiếm)"
-                placeholder="Gõ vài chữ đầu (VD: rach, pq, oc...)"
                 className="w-full pl-8 pr-7 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
               {keyword && (
@@ -821,7 +815,6 @@ function SearchableRegionSelect({
                         {variant === "sidebar" ? reg.displayLabel : reg.name}
                       </span>
                     </span>
-                    <span>{variant === "sidebar" ? reg.displayLabel : reg.name}</span>
                     <span
                       className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                         active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
@@ -1694,7 +1687,6 @@ const HERO_BG_URL =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=85";
 // --- DỮ LIỆU BẾN TÀU, BẾN XE, SÂN BAY CỐ ĐỊNH TRÊN BẢN ĐỒ ---
 const DEFAULT_TRANSIT_HUBS: TransitHub[] = [
-const TRANSIT_HUBS = [
   { id: "hub-1", name: "Bến tàu Rạch Giá", type: "ferry", lat: 10.0145, lng: 105.0752, note: "Tàu cao tốc đi Phú Quốc, Hòn Sơn, Nam Du, Thổ Châu" },
   { id: "hub-2", name: "Bến tàu Hà Tiên", type: "ferry", lat: 10.3792, lng: 104.4795, note: "Tàu cao tốc & phà đi Phú Quốc, Quần đảo Hải Tặc" },
   { id: "hub-3", name: "Cảng Bãi Vòng Phú Quốc", type: "ferry", lat: 10.1462, lng: 104.0625, note: "Cảng tàu cao tốc chính tại Phú Quốc" },
@@ -1800,9 +1792,6 @@ function InteractiveAnGiangMap({
     bus: true,
     airport: true,
   });
-  const [showDestinations, setShowDestinations] = useState<boolean>(true);
-  const [showAccommodations, setShowAccommodations] = useState<boolean>(false);
-  const [showTransitHubs, setShowTransitHubs] = useState<boolean>(true);
   const [leafletReady, setLeafletReady] = useState<boolean>(false);
 
   // Tự động nạp thư viện Leaflet từ CDN (Không cần cài thêm gói hay API Key)
@@ -1901,13 +1890,6 @@ function InteractiveAnGiangMap({
         if (p.tab === "THAM_QUAN") {
           const cat = getPlaceMapCategory(p);
           icon = L.divIcon({
-    // 1. Vẽ các điểm đến tham quan / ẩm thực / lễ hội
-    if (showDestinations) {
-      places
-        .filter((p) => p.isVisible && p.tab !== "NHA_NGHI")
-        .forEach((p) => {
-          const cat = getPlaceMapCategory(p);
-          const icon = L.divIcon({
             className: "custom-dot-marker",
             html: `<div style="width:14px;height:14px;border-radius:9999px;background:${cat.color};border:2.5px solid #ffffff;box-shadow:0 2px 5px rgba(0,0,0,0.35);cursor:pointer;"></div>`,
             iconSize: [14, 14],
@@ -1935,43 +1917,6 @@ function InteractiveAnGiangMap({
       .filter((hub) => visibleHubs[hub.type])
       .forEach((hub) => {
         const symbol = HUB_META[hub.type].symbol;
-
-          const marker = L.marker([p.latitude, p.longitude], { icon });
-          marker.bindTooltip(`<b>${p.name}</b><br/>${p.region} • ${cat.label}`, {
-            direction: "top",
-            offset: [0, -6],
-          });
-          marker.on("click", () => onSelectPlace(p));
-          marker.addTo(group);
-        });
-    }
-
-    // 2. Vẽ các cơ sở lưu trú (Khách sạn / Resort)
-    if (showAccommodations) {
-      places
-        .filter((p) => p.isVisible && p.tab === "NHA_NGHI")
-        .forEach((p) => {
-          const icon = L.divIcon({
-            className: "custom-hotel-marker",
-            html: `<div style="width:22px;height:22px;border-radius:6px;background:#0f766e;color:#ffffff;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">🏨</div>`,
-            iconSize: [22, 22],
-            iconAnchor: [11, 11],
-          });
-
-          const marker = L.marker([p.latitude, p.longitude], { icon });
-          marker.bindTooltip(`<b>${p.name}</b><br/>Lưu trú tại ${p.region}`, {
-            direction: "top",
-            offset: [0, -8],
-          });
-          marker.on("click", () => onSelectPlace(p));
-          marker.addTo(group);
-        });
-    }
-
-    // 3. Vẽ các Bến tàu, Bến xe, Sân bay (Icon vuông nền tối chuẩn hình mẫu)
-    if (showTransitHubs) {
-      TRANSIT_HUBS.forEach((hub) => {
-        const symbol = hub.type === "ferry" ? "⚓" : hub.type === "airport" ? "✈️" : "🚌";
         const icon = L.divIcon({
           className: "custom-hub-marker",
           html: `<div style="width:24px;height:24px;border-radius:6px;background:#0f172a;color:#ffffff;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${symbol}</div>`,
@@ -1987,14 +1932,6 @@ function InteractiveAnGiangMap({
         marker.addTo(group);
       });
 
-        const marker = L.marker([hub.lat, hub.lng], { icon });
-        marker.bindPopup(
-          `<div style="font-size:12px;"><b>${hub.name}</b><br/><span style="color:#475569;">${hub.note}</span></div>`
-        );
-        marker.addTo(group);
-      });
-    }
-
     // 4. Vẽ đường nối Lộ trình hành trình đang lập (nếu có)
     if (plannerPlaces.length > 1) {
       const latlngs = plannerPlaces.map((p) => [p.latitude, p.longitude]);
@@ -2006,7 +1943,6 @@ function InteractiveAnGiangMap({
       }).addTo(group);
     }
   }, [leafletReady, places, plannerPlaces, transitHubs, visibleTabs, visibleHubs, onSelectPlace]);
-  }, [leafletReady, places, plannerPlaces, showDestinations, showAccommodations, showTransitHubs, onSelectPlace]);
 
   const handleFlyToMyLocation = () => {
     onLocateMe();
@@ -2089,35 +2025,6 @@ function InteractiveAnGiangMap({
                 </span>
               </label>
             ))}
-            <label className="flex items-center gap-3 text-sm font-medium text-slate-800 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showDestinations}
-                onChange={(e) => setShowDestinations(e.target.checked)}
-                className="w-4 h-4 accent-[#047857] rounded cursor-pointer"
-              />
-              <span>Điểm đến</span>
-            </label>
-
-            <label className="flex items-center gap-3 text-sm font-medium text-slate-800 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showAccommodations}
-                onChange={(e) => setShowAccommodations(e.target.checked)}
-                className="w-4 h-4 accent-[#047857] rounded cursor-pointer"
-              />
-              <span>Lưu trú</span>
-            </label>
-
-            <label className="flex items-center gap-3 text-sm font-medium text-slate-800 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showTransitHubs}
-                onChange={(e) => setShowTransitHubs(e.target.checked)}
-                className="w-4 h-4 accent-[#047857] rounded cursor-pointer"
-              />
-              <span>Bến tàu, bến xe, sân bay</span>
-            </label>
 
             <div className="pt-1">
               <button
@@ -2319,6 +2226,7 @@ export default function AnGiangTravelGuideApp() {
     NHA_NGHI: "Nhà nghỉ",
     MUA_SAM: "Mua sắm",
     LE_HOI: "Lễ hội",
+    OCOP: "Sản phẩm OCOP",
     HANH_TRINH: "Hành trình",
     CAM_NANG: "Cẩm nang",
   });
@@ -2446,7 +2354,6 @@ export default function AnGiangTravelGuideApp() {
   const nearbyData = useMemo(() => {
     if (!selectedPlace) return null;
     const others = publicPlaces
-    const others = places
       .filter((p) => p.isVisible && p.id !== selectedPlace.id)
       .map((p) => ({
         place: p,
@@ -2461,7 +2368,6 @@ export default function AnGiangTravelGuideApp() {
       stay: pick(["NHA_NGHI"]),
     };
   }, [publicPlaces, selectedPlace]);
-  }, [places, selectedPlace]);
 
   const renderNearbySection = (
     title: string,
@@ -2583,7 +2489,6 @@ export default function AnGiangTravelGuideApp() {
   };
 
   // 1. Tải dữ liệu lần đầu từ /api/state
-  // 1. Chỉ tải dữ liệu từ file shared-travel-data.json thông qua API (/api/state)
   useEffect(() => {
     let isMounted = true;
     async function loadSharedServerData() {
@@ -2599,14 +2504,6 @@ export default function AnGiangTravelGuideApp() {
             // Server chưa có file: coi như bản gốc là dữ liệu mặc định hiện tại
             syncedRef.current = { ...latestRef.current! };
           }
-        if (isMounted && data) {
-          if (Array.isArray(data.places)) setPlaces(data.places);
-          if (Array.isArray(data.regions)) setRegions(data.regions);
-          if (data.allRegionLabel) setAllRegionLabel(data.allRegionLabel);
-          if (data.tabLabels) setTabLabels((prev) => ({ ...prev, ...data.tabLabels }));
-          if (Array.isArray(data.users)) setUsers(data.users);
-          if (Array.isArray(data.reviews)) setReviews(data.reviews);
-          if (Array.isArray(data.savedTrips)) setSavedTrips(data.savedTrips);
         }
 
         const localTrips = localStorage.getItem("ag_saved_trips_v2");
@@ -2615,10 +2512,6 @@ export default function AnGiangTravelGuideApp() {
         }
         const savedCurrentUser = localStorage.getItem("ag_current_user_v2");
         if (isMounted && savedCurrentUser) setCurrentUser(JSON.parse(savedCurrentUser));
-
-        const savedCurrentUser = localStorage.getItem("ag_current_user_v2");
-        if (isMounted && savedCurrentUser) setCurrentUser(JSON.parse(savedCurrentUser));
-
         const savedFavs = localStorage.getItem("ag_favorites_v2");
         if (isMounted && savedFavs) setFavorites(JSON.parse(savedFavs));
 
@@ -2637,9 +2530,6 @@ export default function AnGiangTravelGuideApp() {
 
 
   // 2a. Thông tin riêng của từng người (đăng nhập, yêu thích) chỉ lưu trong trình duyệt, KHÔNG gửi lên server
-  }, []);
-
-  // 2. Tự động lưu mọi thay đổi vào file shared-travel-data.json
   useEffect(() => {
     if (!isStorageLoaded) return;
     try {
@@ -2718,35 +2608,6 @@ export default function AnGiangTravelGuideApp() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStorageLoaded]);
-
-    // Chống mất dữ liệu: không ghi đè file bằng dữ liệu rỗng (VD: lần tải lỗi hoặc dữ liệu chưa kịp nạp)
-    if (places.length === 0 && regions.length === 0) return;
-
-    fetch("/api/state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        places,
-        regions,
-        allRegionLabel,
-        tabLabels,
-        users,
-        reviews,
-        savedTrips,
-      }),
-    }).catch((err) => console.error("Lỗi lưu dữ liệu lên Server:", err));
-  }, [
-    isStorageLoaded,
-    places,
-    regions,
-    allRegionLabel,
-    tabLabels,
-    users,
-    reviews,
-    savedTrips,
-    currentUser,
-    favorites,
-  ]);
 
   // 2b. Sao lưu thêm 1 bản dữ liệu phụ (thư mục "backups"): khi mở web, khi tắt/rời web và mỗi 10 phút
   useEffect(() => {
@@ -2956,10 +2817,18 @@ export default function AnGiangTravelGuideApp() {
     setReviewComment("");
   };
 
+  // Địa điểm chỉ thuộc tab đang mở (VD: tab Tham quan thì chỉ đếm địa điểm tham quan) - dùng để đếm trên các nút khu vực
+  const tabScopedPlaces = useMemo(
+    () =>
+      ["HOME", "BAN_DO", "HANH_TRINH", "CAM_NANG", "ADMIN"].includes(activeTab)
+        ? publicPlaces
+        : publicPlaces.filter((p) => p.tab === activeTab),
+    [publicPlaces, activeTab]
+  );
+
   // --- LỌC ĐỊA ĐIỂM HỖ TRỢ TÌM KIẾM KHÔNG DẤU ---
   const filteredPlaces = useMemo(() => {
     return publicPlaces
-    return places
       .filter((p) => p.isVisible)
       .map((p) => {
         const osrmData = roadRoutes[p.id];
@@ -2999,7 +2868,6 @@ export default function AnGiangTravelGuideApp() {
       })
       .sort((a, b) => a.distanceKm - b.distanceKm);
   }, [publicPlaces, roadRoutes, userLocation, selectedRegion, activeTab, searchQuery]);
-  }, [places, roadRoutes, userLocation, selectedRegion, activeTab, searchQuery]);
 
   // =====================================================================
   // BỘ LẬP HÀNH TRÌNH & DỰ TOÁN CHI PHÍ XÁC ĐỊNH
@@ -3022,10 +2890,6 @@ export default function AnGiangTravelGuideApp() {
   const [fuelPrice, setFuelPrice] = useState<number>(24500);
   const [tollFees, setTollFees] = useState<number>(80000);
   const [parkingFees, setParkingFees] = useState<number>(50000);
-  const [fuelConsumption, setFuelConsumption] = useState<number>(6.5);
-  const [fuelPrice, setFuelPrice] = useState<number>(25000);
-  const [tollFees, setTollFees] = useState<number>(40000);
-  const [parkingFees, setParkingFees] = useState<number>(20000);
   const [rentalDailyPrice] = useState<number>(900000);
   const [adultFerryPrice] = useState<number>(340000);
   const [childFerryPrice] = useState<number>(240000);
@@ -3033,7 +2897,6 @@ export default function AnGiangTravelGuideApp() {
   const [foodPerPersonDay, setFoodPerPersonDay] = useState<number>(250000);
   const [roomPricePerNight, setRoomPricePerNight] = useState<number>(800000);
   const [roomCount, setRoomCount] = useState<number>(2);
-  const [roomCount] = useState<number>(2);
   const [contingencyPercent, setContingencyPercent] = useState<number>(10);
   const [expectedBudget, setExpectedBudget] = useState<number>(6000000);
 
@@ -3562,45 +3425,6 @@ export default function AnGiangTravelGuideApp() {
 
   // Mở lại chuyến đi đã lưu: nạp lại toàn bộ lựa chọn và mở thẳng trang kết quả
   const handleLoadSavedTrip = (trip: SavedTripItem) => applyTrip(trip);
-  // Lưu chuyến đi hiện tại
-  const handleSaveCurrentTrip = () => {
-    if (plannerDestIds.length === 0) {
-      alert("Vui lòng chọn ít nhất 1 địa điểm vào lộ trình trước khi lưu!");
-      return;
-    }
-    const newTrip: SavedTripItem = {
-      id: `trip-${Date.now()}`,
-      title: tripTitle.trim() || `Chuyến đi An Giang (${plannerDays} ngày)`,
-      createdAt: new Date().toLocaleString("vi-VN"),
-      owner: currentUser?.username || "Du khách",
-      plannerDays,
-      adultCount,
-      childCount,
-      vehicleType,
-      vehicleCount,
-      destIds: [...plannerDestIds],
-      roadKm: routeSummary.roadKm,
-      waterKm: routeSummary.waterKm,
-      totalCost: costBreakdown.grandTotal,
-      perPersonCost: costBreakdown.perPerson,
-    };
-
-    setSavedTrips((prev) => [newTrip, ...prev]);
-    setSaveTripSuccess(true);
-    setTimeout(() => setSaveTripSuccess(false), 3000);
-  };
-
-  // Mở lại chuyến đi đã lưu
-  const handleLoadSavedTrip = (trip: SavedTripItem) => {
-    setTripTitle(trip.title);
-    setPlannerDays(trip.plannerDays);
-    setAdultCount(trip.adultCount);
-    setChildCount(trip.childCount);
-    setVehicleType(trip.vehicleType);
-    setVehicleCount(trip.vehicleCount);
-    setPlannerDestIds(trip.destIds);
-    setCustomRoadKm(null);
-  };
 
   // Xóa chuyến đi đã lưu
   const handleDeleteSavedTrip = (id: string) => {
@@ -3682,13 +3506,6 @@ export default function AnGiangTravelGuideApp() {
       const img = new Image();
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-  const handleImageUploadFromComputer = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
         const canvas = document.createElement("canvas");
         const maxWidth = 900;
         const scale = img.width > maxWidth ? maxWidth / img.width : 1;
@@ -3732,6 +3549,643 @@ export default function AnGiangTravelGuideApp() {
     } catch (err) {
       alert("Không tải được ảnh lên: " + (err instanceof Error ? err.message : String(err)));
     }
+  };
+
+  // =====================================================================
+  // ADMIN: QUẢN LÝ SẢN PHẨM OCOP (lưu chung vào danh sách places với tab = "OCOP")
+  // Các trường riêng của OCOP được ghép vào culturalHistory dạng 2 dòng:
+  //   Chủ thể sản phẩm: ... / Hạng sao OCOP: N sao
+  // =====================================================================
+  const OCOP_GROUP_SUGGESTIONS = [
+    "Lương thực & Thực phẩm",
+    "Nước mắm & Mắm đặc sản",
+    "Gia vị & Đặc sản chế biến",
+    "Đồ uống & Thảo mộc",
+    "Thủ công mỹ nghệ",
+    "Dịch vụ du lịch",
+  ];
+  const emptyOcopForm = () => ({
+    name: "",
+    owner: "",
+    region: "",
+    address: "",
+    group: "",
+    stars: 5,
+    desc: "",
+    imageUrl: "",
+  });
+  const [ocopEditingId, setOcopEditingId] = useState<string | null>(null);
+  const [ocopForm, setOcopForm] = useState(emptyOcopForm);
+  const [ocopSearch, setOcopSearch] = useState<string>("");
+  const [ocopUploading, setOcopUploading] = useState<boolean>(false);
+
+  const composeOcopInfo = (owner: string, stars: number) =>
+    [
+      `Chủ thể sản phẩm: ${owner.trim() || "Đang cập nhật"}`,
+      `Hạng sao OCOP: ${Math.min(5, Math.max(3, Math.round(Number(stars) || 5)))} sao`,
+    ].join("\n");
+
+  const parseOcopInfo = (text: string) => {
+    const pick = (label: string) => {
+      const m = (text || "").match(new RegExp(`${label}:\\s*(.*)`));
+      return m ? m[1].trim() : "";
+    };
+    const v = parseInt(pick("Hạng sao OCOP"), 10);
+    return {
+      owner: pick("Chủ thể sản phẩm"),
+      stars: v >= 3 && v <= 5 ? v : 5,
+    };
+  };
+
+  const ocopProducts = useMemo(
+    () => places.filter((p) => p.tab === "OCOP"),
+    [places]
+  );
+
+  // Điểm sao hiển thị trên web của sản phẩm OCOP luôn = hạng sao OCOP (4 sao -> 4/5, 5 sao -> 5/5).
+  // Tự đồng bộ cho cả sản phẩm cũ đã lưu với điểm 5/5.
+  useEffect(() => {
+    if (!isStorageLoaded) return;
+    const stale = places.some(
+      (p) => p.tab === "OCOP" && p.rating !== parseOcopInfo(p.culturalHistory).stars
+    );
+    if (!stale) return;
+    setPlaces((prev) =>
+      prev.map((p) => {
+        if (p.tab !== "OCOP") return p;
+        const stars = parseOcopInfo(p.culturalHistory).stars;
+        return p.rating === stars ? p : { ...p, rating: stars };
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [places, isStorageLoaded]);
+
+  const ocopVisibleList = useMemo(() => {
+    const q = ocopSearch.trim();
+    return ocopProducts.filter(
+      (p) =>
+        !q ||
+        matchesVietnameseSearch(p.name, q) ||
+        matchesVietnameseSearch(p.subCategory, q) ||
+        matchesVietnameseSearch(p.culturalHistory, q) ||
+        matchesVietnameseSearch(p.region, q)
+    );
+  }, [ocopProducts, ocopSearch]);
+
+  const resetOcopForm = () => {
+    setOcopEditingId(null);
+    setOcopForm({ ...emptyOcopForm(), region: regions[0]?.name || "" });
+  };
+
+  const handleOcopImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setOcopUploading(true);
+    try {
+      const url = await uploadImageFile(file);
+      setOcopForm((prev) => ({ ...prev, imageUrl: url }));
+    } catch (err) {
+      alert("Không tải được ảnh lên: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setOcopUploading(false);
+    }
+  };
+
+  const handleOcopSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = ocopForm.name.trim();
+    if (!name) return;
+    const region = ocopForm.region || regions[0]?.name || "Rạch Giá";
+    const address = ocopForm.address.trim() || region;
+
+    const duplicate = places.find(
+      (p) => p.id !== ocopEditingId && makePlaceKey(p.name, p.region) === makePlaceKey(name, region)
+    );
+    if (duplicate) {
+      alert(`Sản phẩm "${duplicate.name}" tại ${duplicate.region} đã có trong hệ thống nên không thêm lại.`);
+      return;
+    }
+
+    const info = composeOcopInfo(ocopForm.owner, ocopForm.stars);
+    const finalImage = ocopForm.imageUrl.trim() || DEFAULT_PLACE_IMAGE_URL;
+    const group = ocopForm.group.trim() || "OCOP 5 sao";
+
+    if (ocopEditingId) {
+      setPlaces((prev) =>
+        prev.map((p) =>
+          p.id === ocopEditingId
+            ? {
+                ...p,
+                name,
+                region,
+                address,
+                subCategory: group,
+                shortDesc: ocopForm.desc.trim(),
+                culturalHistory: info,
+                awardBadge: `OCOP ${ocopForm.stars} sao`,
+                imageUrl: finalImage,
+              }
+            : p
+        )
+      );
+    } else {
+      // Lấy tọa độ của 1 địa điểm cùng khu vực để sản phẩm hiện đúng vị trí trên bản đồ / tính khoảng cách
+      const sameRegion = places.find((p) => p.region === region && p.tab !== "OCOP");
+      const created: PlaceItem = {
+        id: `ocop-${Date.now()}`,
+        name,
+        region,
+        tab: "OCOP",
+        subCategory: group,
+        badgeIcon: "🏅",
+        address,
+        latitude: sameRegion?.latitude ?? 10.0125,
+        longitude: sameRegion?.longitude ?? 105.0809,
+        rating: 5,
+        reviewCount: 0,
+        ticketPrice: 0,
+        priceLevel: "Liên hệ chủ thể",
+        openingHours: "Liên hệ chủ thể",
+        phone: "Đang cập nhật",
+        shortDesc: ocopForm.desc.trim(),
+        culturalHistory: info,
+        awardBadge: `OCOP ${ocopForm.stars} sao`,
+        imageUrl: finalImage,
+        tags: ["ocop", "dac_san", `${ocopForm.stars}_sao`],
+        isVisible: true,
+      };
+      setPlaces((prev) => [created, ...prev]);
+    }
+    resetOcopForm();
+  };
+
+  // Đổi nhanh hạng sao OCOP của 1 sản phẩm (VD: được đánh giá lại từ 4 sao lên 5 sao)
+  const handleOcopSetStars = (id: string, stars: number) => {
+    setPlaces((prev) =>
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        const info = parseOcopInfo(p.culturalHistory);
+        return {
+          ...p,
+          culturalHistory: composeOcopInfo(info.owner, stars),
+          awardBadge: `OCOP ${stars} sao`,
+          tags: [...(p.tags || []).filter((t) => !/^\d_sao$/.test(t)), `${stars}_sao`],
+        };
+      })
+    );
+  };
+
+  const handleOcopEdit = (p: PlaceItem) => {
+    const info = parseOcopInfo(p.culturalHistory);
+    setOcopEditingId(p.id);
+    setOcopForm({
+      name: p.name,
+      owner: info.owner,
+      region: p.region,
+      address: p.address,
+      group: p.subCategory,
+      stars: info.stars,
+      desc: p.shortDesc,
+      imageUrl: isMissingImage(p) ? "" : p.imageUrl,
+    });
+    document.getElementById("ocop-admin-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Nhập sản phẩm OCOP từ BẤT KỲ file Excel / CSV nào: tự dò dòng tiêu đề và các cột theo tên gần đúng.
+  // Cột nhận diện: Tên sản phẩm (bắt buộc) | Chủ thể | Nơi cung cấp / Địa chỉ / Khu vực | Đôi nét / Mô tả |
+  // Nhóm sản phẩm | Hạng sao | Hình ảnh (link). Thiếu cột nào thì dùng giá trị mặc định đang chọn trong form.
+  const handleOcopImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const wb = XLSX.read(evt.target?.result, { type: "array" });
+        const simplify = (v: any) => removeVietnameseTones(String(v ?? "")).replace(/[^a-z0-9]/g, "");
+        const KEYS = {
+          name: ["tensanpham", "tensp", "sanpham", "tenhang", "ten"],
+          owner: ["chuthe", "chusohuu", "donvi", "congty", "nhasanxuat", "coso", "thuonghieu"],
+          address: ["noicungcap", "noisanxuat", "diachi", "xaphuong", "diadiem", "khuvuc", "diaban"],
+          desc: ["doinet", "mota", "gioithieu", "thongtin", "ghichu"],
+          group: ["nhomsanpham", "nhom", "phanloai", "loai", "danhmuc"],
+          stars: ["hangsao", "xephang", "phanhang", "sao", "hang"],
+          image: ["hinhanh", "linkanh", "anh", "image", "imageurl", "hinh"],
+        } as const;
+        type ColKey = keyof typeof KEYS;
+        const findCol = (headers: string[], key: ColKey, used: Set<number>) => {
+          for (const k of KEYS[key]) {
+            const i = headers.findIndex((h, idx) => !used.has(idx) && h === k);
+            if (i >= 0) return i;
+          }
+          for (const k of KEYS[key]) {
+            const i = headers.findIndex((h, idx) => !used.has(idx) && h.length > 0 && h.startsWith(k));
+            if (i >= 0) return i;
+          }
+          for (const k of KEYS[key]) {
+            if (k.length < 4) continue;
+            const i = headers.findIndex((h, idx) => !used.has(idx) && h.includes(k));
+            if (i >= 0) return i;
+          }
+          return -1;
+        };
+
+        // Chọn trang tính (sheet) có dòng tiêu đề chứa cột tên sản phẩm
+        let rows: any[][] = [];
+        let cols: Record<ColKey, number> | null = null;
+        let headerIdx = -1;
+        for (const sn of wb.SheetNames) {
+          const aoa: any[][] = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: "" });
+          for (let r = 0; r < Math.min(aoa.length, 25); r++) {
+            const headers = aoa[r].map((c) => simplify(c));
+            if (headers.filter(Boolean).length < 2) continue;
+            const used = new Set<number>();
+            const nameIdx = findCol(headers, "name", used);
+            if (nameIdx < 0) continue;
+            used.add(nameIdx);
+            const found = { name: nameIdx } as Record<ColKey, number>;
+            (["owner", "address", "desc", "group", "stars", "image"] as ColKey[]).forEach((k) => {
+              const i = findCol(headers, k, used);
+              found[k] = i;
+              if (i >= 0) used.add(i);
+            });
+            rows = aoa;
+            cols = found;
+            headerIdx = r;
+            break;
+          }
+          if (cols) break;
+        }
+        // Không có dòng tiêu đề rõ ràng: lấy trang đầu, cột đầu tiên có chữ làm tên sản phẩm
+        if (!cols) {
+          const aoa: any[][] = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+          const first = aoa.find((r) => r.some((c) => String(c).trim() !== "")) || [];
+          const nameIdx = first.findIndex((c) => isNaN(Number(c)) && String(c).trim() !== "");
+          if (nameIdx < 0) {
+            alert("Không đọc được file: không tìm thấy cột nào chứa tên sản phẩm.");
+            return;
+          }
+          rows = aoa;
+          headerIdx = -1;
+          cols = { name: nameIdx, owner: -1, address: -1, desc: -1, group: -1, stars: -1, image: -1 };
+        }
+
+        const cell = (r: any[], i: number) => (i >= 0 ? String(r[i] ?? "").trim() : "");
+        const seen = new Set(places.map((p) => makePlaceKey(p.name, p.region)));
+        const sortedRegions = [...regions].sort((a, b) => b.name.length - a.name.length);
+        const fresh: PlaceItem[] = [];
+        let skippedDup = 0;
+        let skippedEmpty = 0;
+        const defaultRegion = ocopForm.region || regions[0]?.name || "Rạch Giá";
+
+        rows.slice(headerIdx + 1).forEach((r, i) => {
+          const name = cell(r, cols!.name);
+          const simple = simplify(name);
+          if (!name || simple.startsWith("tongcong") || simple === "stt" || /^\d+$/.test(name)) {
+            skippedEmpty++;
+            return;
+          }
+          const address = cell(r, cols!.address);
+          const addrSimple = simplify(address + " " + name);
+          const matched = sortedRegions.find((rg) => {
+            const k = simplify(rg.name);
+            return k.length >= 3 && addrSimple.includes(k);
+          });
+          const region = matched?.name || defaultRegion;
+          const key = makePlaceKey(name, region);
+          if (seen.has(key)) {
+            skippedDup++;
+            return;
+          }
+          seen.add(key);
+
+          const starCell = cell(r, cols!.stars);
+          const starMatch = starCell.match(/[3-5]/);
+          const stars = starMatch ? Number(starMatch[0]) : ocopForm.stars;
+          const imgCell = cell(r, cols!.image);
+          const sameRegion = places.find((p) => p.region === region && p.tab !== "OCOP");
+
+          fresh.push({
+            id: `ocop-${Date.now()}-${i}`,
+            name,
+            region,
+            tab: "OCOP",
+            subCategory: cell(r, cols!.group) || "OCOP",
+            badgeIcon: "🏅",
+            address: address || region,
+            latitude: sameRegion?.latitude ?? 10.0125,
+            longitude: sameRegion?.longitude ?? 105.0809,
+            rating: 5,
+            reviewCount: 0,
+            ticketPrice: 0,
+            priceLevel: "Liên hệ chủ thể",
+            openingHours: "Liên hệ chủ thể",
+            phone: "Đang cập nhật",
+            shortDesc: cell(r, cols!.desc),
+            culturalHistory: composeOcopInfo(cell(r, cols!.owner), stars),
+            awardBadge: `OCOP ${stars} sao`,
+            imageUrl: /^https?:\/\//i.test(imgCell) ? imgCell : DEFAULT_PLACE_IMAGE_URL,
+            tags: ["ocop", "dac_san", `${stars}_sao`],
+            isVisible: true,
+          });
+        });
+
+        if (fresh.length === 0) {
+          alert(`Không có sản phẩm mới để thêm (trùng: ${skippedDup}, dòng trống/không hợp lệ: ${skippedEmpty}).`);
+          return;
+        }
+        setPlaces((prev) => [...fresh, ...prev]);
+        const noStarCol = cols.stars < 0 ? ` File không có cột hạng sao nên đặt ${ocopForm.stars} sao.` : "";
+        alert(
+          `Đã nhập ${fresh.length} sản phẩm OCOP (bỏ qua ${skippedDup} trùng).${noStarCol} Hãy kiểm tra khu vực và bấm "Thêm ảnh" cho từng sản phẩm.`
+        );
+      } catch (err) {
+        alert("Không đọc được file Excel: " + (err instanceof Error ? err.message : String(err)));
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  // Nạp 20 sản phẩm OCOP 5 sao & 4 sao (từ file Excel). Sản phẩm đã nạp trước đó được cập nhật chữ,
+  // nhưng GIỮ NGUYÊN ảnh và khu vực đã chọn.
+  const handleSeedOcopSamples = () => {
+    const findRegion = (kw: string) =>
+      regions.find((r) => removeVietnameseTones(r.name).includes(kw))?.name ||
+      regions[0]?.name ||
+      "Rạch Giá";
+    const samples = [
+      {
+        "name": "Gạo thơm đặc sản Thiên Vương",
+        "owner": "Công ty TNHH MTV Lương thực Thoại Sơn",
+        "kw": "thoai son",
+        "address": "Xã Thoại Sơn (TT. Núi Sập cũ)",
+        "lat": 10.2667,
+        "lng": 105.2667,
+        "group": "Lương thực & Thực phẩm",
+        "stars": 5,
+        "desc": "Gạo thơm đặc sản vùng Tứ giác Long Xuyên, hạt dài thon đẹp, trắng trong, ít bạc bụng. Cơm dẻo vừa, thơm dịu tự nhiên và giữ độ mềm ngọt ngay cả khi để nguội."
+      },
+      {
+        "name": "Gạo ngon Tiến Vua Tiên Nữ",
+        "owner": "Công ty TNHH MTV Lương thực Thoại Sơn",
+        "kw": "thoai son",
+        "address": "Xã Thoại Sơn (TT. Núi Sập cũ)",
+        "lat": 10.2667,
+        "lng": 105.2667,
+        "group": "Lương thực & Thực phẩm",
+        "stars": 5,
+        "desc": "Dòng gạo đặc sản cao cấp canh tác bền vững, kiểm soát chặt chẽ từ vùng nguyên liệu đến đóng gói. Hạt gạo đều, cơm trắng bóng, vị ngọt đậm và hương thơm đặc trưng."
+      },
+      {
+        "name": "Mật thốt nốt Palmania (dạng sệt, hạt, bột)",
+        "owner": "Công ty Cổ phần Palmania",
+        "kw": "tri ton",
+        "address": "Xã Tri Tôn (TT. Tri Tôn cũ)",
+        "lat": 10.4108,
+        "lng": 105.0003,
+        "group": "Gia vị & Đặc sản chế biến",
+        "stars": 5,
+        "desc": "Sản xuất 100% từ mật hoa thốt nốt tươi thu hoạch thủ công tại vùng Bảy Núi, không chất bảo quản, chỉ số đường huyết thấp. Gồm 3 dòng (sệt, hạt, bột) vị ngọt thanh, hương caramen dịu nhẹ."
+      },
+      {
+        "name": "Nước mắm Phú Quốc Khải Hoàn (38, 40, 43 độ đạm)",
+        "owner": "Công ty Cổ phần Thương mại Khải Hoàn",
+        "kw": "phu quoc",
+        "address": "Đặc khu Phú Quốc (Dương Đông cũ)",
+        "lat": 10.2167,
+        "lng": 103.9667,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 5,
+        "desc": "Nước mắm truyền thống mang chỉ dẫn địa lý Phú Quốc, ủ chượp 12–15 tháng trong thùng gỗ bời lời từ cá cơm tươi. Gồm 3 mức độ đạm tự nhiên, màu cánh gián trong, hậu vị ngọt sâu."
+      },
+      {
+        "name": "Nước mắm Thanh Quốc (35, 40, 43 độ đạm)",
+        "owner": "Công ty TNHH SX & KD Nước mắm Thanh Quốc",
+        "kw": "phu quoc",
+        "address": "Đặc khu Phú Quốc (Dương Đông cũ)",
+        "lat": 10.2167,
+        "lng": 103.9667,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 5,
+        "desc": "Nước mắm cốt cá cơm sọc tiêu nguyên chất ủ chượp gia truyền, đạt chuẩn chỉ dẫn địa lý Phú Quốc bảo hộ tại EU. Giàu axit amin tự nhiên, màu đỏ nâu bắt mắt, phù hợp ăn hằng ngày và xuất khẩu."
+      },
+      {
+        "name": "Nước mắm Phú Quốc Huỳnh Khoa (40, 43, 45 độ đạm)",
+        "owner": "Công ty TNHH KD Nước mắm Huỳnh Khoa",
+        "kw": "phu quoc",
+        "address": "Đặc khu Phú Quốc (Dương Đông & Cửa Dương cũ)",
+        "lat": 10.2167,
+        "lng": 103.9667,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 5,
+        "desc": "Nước mắm cốt nhĩ truyền thống ủ chượp hơn 12 tháng bằng phương pháp gài nén lâu đời, không phụ gia. Nổi bật với dòng 45 độ đạm tự nhiên cao nhất tỉnh, sóng sánh màu cánh gián."
+      },
+      {
+        "name": "Rau quả & Đặc sản đóng hộp Antesco (Bắp non, thốt nốt, cá linh)",
+        "owner": "Công ty Cổ phần Rau quả Thực phẩm An Giang (Antesco)",
+        "kw": "long xuyen",
+        "address": "Phường Long Xuyên",
+        "lat": 10.3759,
+        "lng": 105.4185,
+        "group": "Lương thực & Thực phẩm",
+        "stars": 4,
+        "desc": "Bộ sản phẩm chế biến đóng hộp xuất khẩu gồm bắp non đóng hộp (tiềm năng 5 sao), thốt nốt đóng lon, mắm cá linh chưng và cá linh kho mía. Quy trình hiện đại, giữ trọn hương vị đặc sản miền Tây."
+      },
+      {
+        "name": "Đường thốt nốt Trần Gia (dạng chảy, bột, viên)",
+        "owner": "Công ty CP Phát triển Đặc sản Vùng miền Trần Gia",
+        "kw": "tinh bien",
+        "address": "Phường Tịnh Biên (TT. Tịnh Biên cũ)",
+        "lat": 10.5833,
+        "lng": 105.0,
+        "group": "Gia vị & Đặc sản chế biến",
+        "stars": 4,
+        "desc": "Đường thốt nốt nguyên chất nấu thủ công từ nước hoa thốt nốt vùng Bảy Núi, không pha đường tinh luyện hay chất tẩy trắng. Vị ngọt thanh, béo nhẹ, mùi thơm nồng đặc trưng dùng nấu chè và kho cá."
+      },
+      {
+        "name": "Mắm Bà Giáo Khỏe 7 số 7 (Mắm thái, cá linh, cá sặc)",
+        "owner": "Doanh nghiệp tư nhân Mắm Bà Giáo Khỏe",
+        "kw": "chau doc",
+        "address": "Phường Châu Đốc",
+        "lat": 10.7,
+        "lng": 105.1167,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 4,
+        "desc": "Thương hiệu mắm truyền thống trứ danh vùng Châu Đốc với bí quyết ủ chượp nhiều đời từ cá đồng tự nhiên. Thịt mắm thơm đậm, vị mặn ngọt hài hòa, là món quà đặc sản hàng đầu của du khách."
+      },
+      {
+        "name": "Mắm cá mè vinh Bà Sáu",
+        "owner": "Hộ kinh doanh sản xuất mắm Bà Sáu",
+        "kw": "tan chau",
+        "address": "Phường Long Phú (TX. Tân Châu cũ)",
+        "lat": 10.8,
+        "lng": 105.2333,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 4,
+        "desc": "Đặc sản mắm cá đồng vùng đầu nguồn sông Tiền, chế biến tỉ mỉ từ cá mè vinh tươi kết hợp thính gạo rang và đường thốt nốt. Khi chưng hoặc nấu lẩu có vị béo ngậy và mùi thơm đặc trưng."
+      },
+      {
+        "name": "Trà Kim Ngân Hoa Thái Minh Nguyên",
+        "owner": "Công ty TNHH MTV TM&DV Thái Minh Nguyên",
+        "kw": "cho moi",
+        "address": "Xã Chợ Mới (TT. Chợ Mới cũ)",
+        "lat": 10.45,
+        "lng": 105.4333,
+        "group": "Đồ uống & Thảo mộc",
+        "stars": 4,
+        "desc": "Trà thảo mộc sản xuất từ hoa kim ngân trồng sạch theo tiêu chí không chất bảo quản, không phẩm màu. Vị ngọt dịu tự nhiên, hương thơm thanh mát, hỗ trợ thanh nhiệt và dễ ngủ."
+      },
+      {
+        "name": "Bánh hạnh nhân Tiến Anh",
+        "owner": "Công ty TNHH MTV Tiến Anh",
+        "kw": "phu tan",
+        "address": "Xã Phú Tân (TT. Phú Mỹ cũ)",
+        "lat": 10.66,
+        "lng": 105.27,
+        "group": "Lương thực & Thực phẩm",
+        "stars": 4,
+        "desc": "Đặc sản bánh truyền thống nổi tiếng xứ cù lao Phú Tân, làm từ bột đậu xanh, bột mì, đường và hạt hạnh nhân nướng vàng. Bánh giòn xốp, tan nhẹ trong miệng, thơm bùi và ngọt vừa phải."
+      },
+      {
+        "name": "Khô cá tra phồng Chín Thảo",
+        "owner": "Cơ sở sản xuất Khô cá tra phồng Chín Thảo",
+        "kw": "chau phu",
+        "address": "Xã Châu Phú (TT. Cái Dầu cũ)",
+        "lat": 10.5667,
+        "lng": 105.2333,
+        "group": "Lương thực & Thực phẩm",
+        "stars": 4,
+        "desc": "Chế biến từ cá tra thịt trắng tươi ngon, tẩm ướp gia vị hài hòa và phơi nắng tự nhiên đúng độ. Khi chiên lớp da phồng giòn rụm, thịt bên trong béo mềm, thơm ngon đặc trưng vùng sông Hậu."
+      },
+      {
+        "name": "Lụa Lãnh Mỹ A Tân Châu",
+        "owner": "Cơ sở dệt lụa Tám Lăng",
+        "kw": "tan chau",
+        "address": "Phường Tân Châu (P. Long Thạnh cũ)",
+        "lat": 10.8,
+        "lng": 105.2333,
+        "group": "Thủ công mỹ nghệ",
+        "stars": 4,
+        "desc": "Dòng lụa tơ tằm thượng hạng trứ danh miền Tây, dệt thủ công và nhuộm hoàn toàn từ nhựa trái mặc nưa qua hàng chục công đoạn. Mặt lụa đen huyền bóng mượt, mặc mát vào mùa hè và ấm vào mùa đông."
+      },
+      {
+        "name": "Gạo hữu cơ Kim Thiên Lộc (Nàng Hương, Lức đỏ, Lức đen)",
+        "owner": "Hợp tác xã Nông hữu cơ Rạch Giá",
+        "kw": "rach gia",
+        "address": "Phường Rạch Giá (P. Vĩnh Lạc cũ)",
+        "lat": 10.0125,
+        "lng": 105.0809,
+        "group": "Lương thực & Thực phẩm",
+        "stars": 4,
+        "desc": "Dòng gạo canh tác theo quy trình hữu cơ an toàn gồm Nàng Hương, Lức đỏ và Lức đen giàu dinh dưỡng. Hạt gạo chắc mẩy, giàu chất xơ và chất chống oxy hóa, thích hợp cho chế độ ăn thực dưỡng."
+      },
+      {
+        "name": "Thủ công mỹ nghệ Cỏ bàng Phú Mỹ (Túi xách, sọt, tụng)",
+        "owner": "Hợp tác xã Phụ nữ Cỏ bàng Phú Mỹ",
+        "kw": "giang thanh",
+        "address": "Xã Giang Thành (Xã Phú Mỹ cũ)",
+        "lat": 10.4167,
+        "lng": 104.8333,
+        "group": "Thủ công mỹ nghệ",
+        "stars": 4,
+        "desc": "Sản phẩm đan lát thủ công tinh xảo từ cây cỏ bàng tự nhiên vùng đồng cỏ bàng Phú Mỹ, thân thiện môi trường. Đa dạng mẫu mã túi xách thời trang, tụng và sọt trang trí, đạt chuẩn sản phẩm nông thôn tiêu biểu."
+      },
+      {
+        "name": "Đồ thủ công Cỏ bàng Toàn Tuyền (Giỏ xách, thùng sọt)",
+        "owner": "Cơ sở sản xuất thủ công mỹ nghệ Toàn Tuyền",
+        "kw": "giang thanh",
+        "address": "Xã Giang Thành (Xã Phú Lợi cũ)",
+        "lat": 10.4167,
+        "lng": 104.8333,
+        "group": "Thủ công mỹ nghệ",
+        "stars": 4,
+        "desc": "Các dòng giỏ xách và thùng sọt đan tay từ nguyên liệu cỏ bàng phơi khô tự nhiên, xử lý chống ẩm mốc kỹ lưỡng. Thiết kế bền đẹp, mộc mạc, phục vụ thị trường quà tặng du lịch và xuất khẩu."
+      },
+      {
+        "name": "Rượu Vang Sim Phú Quốc (Sim Sơn)",
+        "owner": "Công ty TNHH TM&DV Sim Sơn Phú Quốc",
+        "kw": "phu quoc",
+        "address": "Đặc khu Phú Quốc (Xã Dương Tơ cũ)",
+        "lat": 10.2167,
+        "lng": 103.9667,
+        "group": "Đồ uống & Thảo mộc",
+        "stars": 4,
+        "desc": "Lên men tự nhiên từ trái hồng sim rừng chín mọng thu hái tại đảo Phú Quốc theo quy trình kiểm soát chặt chẽ. Rượu có màu đỏ tím đẹp mắt, vị ngọt chát hài hòa, hương sim rừng thơm nồng đặc trưng."
+      },
+      {
+        "name": "Nước mắm Phú Quốc Thịnh Phát (35, 40 độ đạm)",
+        "owner": "Doanh nghiệp tư nhân Nước mắm Thịnh Phát",
+        "kw": "phu quoc",
+        "address": "Đặc khu Phú Quốc (Dương Đông cũ)",
+        "lat": 10.2167,
+        "lng": 103.9667,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 4,
+        "desc": "Thương hiệu nhà thùng lâu đời tại Phú Quốc, ủ chượp hoàn toàn tự nhiên từ cá cơm tươi và muối biển trong thùng gỗ lớn. Nước mắm có màu cánh gián tự nhiên, mùi thơm dịu và hậu vị ngọt đậm."
+      },
+      {
+        "name": "Nước mắm Phú Quốc Phụng Hưng (40, 45 độ đạm)",
+        "owner": "Doanh nghiệp tư nhân Nước mắm Phụng Hưng",
+        "kw": "phu quoc",
+        "address": "Đặc khu Phú Quốc (An Thới cũ)",
+        "lat": 10.2167,
+        "lng": 103.9667,
+        "group": "Nước mắm & Mắm đặc sản",
+        "stars": 4,
+        "desc": "Nước mắm cốt truyền thống đạt chỉ dẫn địa lý Phú Quốc sản xuất theo quy trình khép kín chuẩn xuất khẩu. Độ đạm tự nhiên cao, hương vị đậm đà tinh khiết, được nhiều du khách chọn mua làm quà."
+      }
+    ];
+    const existingIds = new Set(places.map((p) => p.id));
+    const existingKeys = new Set(places.map((p) => makePlaceKey(p.name, p.region)));
+    const fresh: PlaceItem[] = [];
+    const updates: Record<string, Partial<PlaceItem>> = {};
+    samples.forEach((sm, i) => {
+      const id = `ocop-seed-${i + 1}`;
+      const text = {
+        name: sm.name,
+        subCategory: sm.group,
+        address: sm.address,
+        shortDesc: sm.desc,
+        culturalHistory: composeOcopInfo(sm.owner, sm.stars),
+        awardBadge: `OCOP ${sm.stars} sao`,
+        tags: ["ocop", "dac_san", `${sm.stars}_sao`],
+      };
+      if (existingIds.has(id)) {
+        updates[id] = text;
+        return;
+      }
+      const region = findRegion(sm.kw);
+      if (existingKeys.has(makePlaceKey(sm.name, region))) return;
+      fresh.push({
+        id,
+        region,
+        tab: "OCOP",
+        badgeIcon: "🏅",
+        latitude: sm.lat,
+        longitude: sm.lng,
+        rating: 5,
+        reviewCount: 0,
+        ticketPrice: 0,
+        priceLevel: "Liên hệ chủ thể",
+        openingHours: "Liên hệ chủ thể",
+        phone: "Đang cập nhật",
+        imageUrl: DEFAULT_PLACE_IMAGE_URL,
+        isVisible: true,
+        ...text,
+      } as PlaceItem);
+    });
+    if (fresh.length === 0 && Object.keys(updates).length === 0) {
+      alert("Các sản phẩm OCOP trong Excel đã có đủ trong hệ thống.");
+      return;
+    }
+    setPlaces((prev) => [
+      ...fresh,
+      ...prev.map((p) => (updates[p.id] ? { ...p, ...updates[p.id] } : p)),
+    ]);
+    alert(
+      `Đã thêm ${fresh.length} và cập nhật ${Object.keys(updates).length} sản phẩm OCOP. Hãy bấm "Thêm ảnh" cho từng sản phẩm.`
+    );
   };
 
   // Thêm ảnh nhanh cho 1 địa điểm ngay trong bảng danh sách (không cần mở form sửa)
@@ -3789,25 +4243,11 @@ export default function AnGiangTravelGuideApp() {
       setMigratingImages(false);
     }
     if (failed > 0) alert(`Có ${failed} ảnh chưa chuyển được, bạn bấm lại để thử tiếp.`);
-
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
-          setAdminForm((prev) => ({ ...prev, imageUrl: compressedBase64 }));
-        }
-      };
-      if (typeof event.target?.result === "string") {
-        img.src = event.target.result;
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   // --- NHẬP EXCEL: HỎI LOẠI FILE TRƯỚC KHI NHẬP ---
   const [pendingExcelFile, setPendingExcelFile] = useState<File | null>(null);
   const [importTab, setImportTab] = useState<FunctionalTab | "HUB">("THAM_QUAN");
-  const [importTab, setImportTab] = useState<FunctionalTab>("THAM_QUAN");
   const [autoFindImages, setAutoFindImages] = useState<boolean>(true);
   const [imageFetchProgress, setImageFetchProgress] = useState<{
     done: number;
@@ -3888,6 +4328,7 @@ export default function AnGiangTravelGuideApp() {
     { id: "NHA_NGHI", label: tabLabels.NHA_NGHI || "Nhà nghỉ", icon: "🏨", subCategory: "Lưu trú", badgeIcon: "🏨" },
     { id: "MUA_SAM", label: tabLabels.MUA_SAM || "Mua sắm", icon: "🛍️", subCategory: "Mua sắm", badgeIcon: "🛍️" },
     { id: "LE_HOI", label: tabLabels.LE_HOI || "Lễ hội", icon: "🎉", subCategory: "Lễ hội", badgeIcon: "🎉" },
+    { id: "OCOP", label: tabLabels.OCOP || "Sản phẩm OCOP", icon: "🏅", subCategory: "OCOP 5 sao", badgeIcon: "🏅" },
   ];
 
   // Bước 1: chọn file -> mở hộp thoại hỏi loại
@@ -4011,7 +4452,6 @@ export default function AnGiangTravelGuideApp() {
       return;
     }
     const targetTab: FunctionalTab = importTab;
-    const targetTab = importTab;
     const tabMeta = IMPORT_TAB_OPTIONS.find((o) => o.id === targetTab)!;
     setPendingExcelFile(null);
 
@@ -4115,9 +4555,6 @@ export default function AnGiangTravelGuideApp() {
           const region = canonicalRegionName(
             String(getCell(row, "Khu vực (xã/phường)", "Khu vực", "Khu vuc") || "An Giang")
           );
-          const region = String(
-            getCell(row, "Khu vực (xã/phường)", "Khu vực", "Khu vuc") || "An Giang"
-          ).trim();
 
           // Điểm đánh giá: lấy số đầu tiên trong ô, VD "4,5" hoặc "4,5 (1.519)" -> 4.5
           const ratingCell = getCell(row, "Đánh giá", "Danh gia", "Rating");
@@ -4244,8 +4681,6 @@ export default function AnGiangTravelGuideApp() {
                   : description
                 : "",
             imageUrl: DEFAULT_PLACE_IMAGE_URL,
-            imageUrl:
-              "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
             tags: [removeVietnameseTones(region).replace(/\s+/g, "_"), "du_lich_an_giang"],
             isVisible: true,
           });
@@ -4293,10 +4728,6 @@ export default function AnGiangTravelGuideApp() {
             const added: RegionItem[] = [];
             newRegionNames.forEach((regName) => {
               if (!existing.has(normalizeAreaName(regName))) {
-            const existing = new Set(prev.map((r) => r.name.toLowerCase()));
-            const added: RegionItem[] = [];
-            newRegionNames.forEach((regName) => {
-              if (!existing.has(regName.toLowerCase())) {
                 added.push({
                   id: `reg-excel-${Date.now()}-${added.length}`,
                   name: regName,
@@ -4376,9 +4807,6 @@ export default function AnGiangTravelGuideApp() {
     }
 
     const finalImage = adminForm.imageUrl.trim() || DEFAULT_PLACE_IMAGE_URL;
-    const finalImage =
-      adminForm.imageUrl.trim() ||
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80";
 
     const computedTicketPrice =
       adminForm.tab === "AM_THUC" ? normalizeAmountVND(Number(adminForm.ticketPrice)) : 0;
@@ -4469,9 +4897,6 @@ export default function AnGiangTravelGuideApp() {
   const adminFilteredPlaces = useMemo(() => {
     return places.filter((p) => {
       const matchNoImage = !adminNoImageOnly || isMissingImage(p);
-
-  const adminFilteredPlaces = useMemo(() => {
-    return places.filter((p) => {
       const matchRegion = adminRegionFilter === "ALL" || p.region === adminRegionFilter;
       const matchTab = adminTabFilter === "ALL" || p.tab === adminTabFilter;
       const matchQuery =
@@ -4482,9 +4907,6 @@ export default function AnGiangTravelGuideApp() {
       return matchNoImage && matchRegion && matchTab && matchQuery;
     });
   }, [places, adminRegionFilter, adminTabFilter, adminSearch, adminNoImageOnly]);
-      return matchRegion && matchTab && matchQuery;
-    });
-  }, [places, adminRegionFilter, adminTabFilter, adminSearch]);
 
   const adminGroups = useMemo(() => {
     const byRegion: Record<string, PlaceItem[]> = {};
@@ -4710,8 +5132,7 @@ export default function AnGiangTravelGuideApp() {
         <div className="flex-1 min-w-0">
           <SearchableRegionSelect
             regions={regions}
-            places={publicPlaces}
-            places={places}
+            places={tabScopedPlaces}
             value={selectedRegion}
             onChange={(reg) => {
               setSelectedRegion(reg);
@@ -4757,8 +5178,7 @@ export default function AnGiangTravelGuideApp() {
           <div className="pt-1">
             <SearchableRegionSelect
               regions={regions}
-              places={publicPlaces}
-              places={places}
+              places={tabScopedPlaces}
               value={selectedRegion}
               onChange={(reg) => {
                 setSelectedRegion(reg);
@@ -4779,6 +5199,7 @@ export default function AnGiangTravelGuideApp() {
               { id: "NHA_NGHI", label: tabLabels.NHA_NGHI || "Nhà nghỉ", icon: Bed },
               { id: "MUA_SAM", label: tabLabels.MUA_SAM || "Mua sắm", icon: ShoppingBag },
               { id: "LE_HOI", label: tabLabels.LE_HOI || "Lễ hội", icon: Sparkles },
+              { id: "OCOP", label: tabLabels.OCOP || "Sản phẩm OCOP", icon: Award },
               {
                 id: "HANH_TRINH",
                 label: `${tabLabels.HANH_TRINH || "Hành trình"} (${plannerDestIds.length})`,
@@ -4858,7 +5279,6 @@ export default function AnGiangTravelGuideApp() {
          ===================================================================== */}
       <main
         className="flex-1 min-w-0 relative min-h-screen md:ml-[235px] bg-cover bg-center md:bg-fixed flex flex-col justify-between"
-        className="flex-1 relative min-h-screen md:ml-[235px] bg-cover bg-center md:bg-fixed flex flex-col justify-between overflow-y-auto"
         style={{
           backgroundImage: `url('/bg-beach.jpg'), url('${HERO_BG_URL}')`,
         }}
@@ -4880,7 +5300,6 @@ export default function AnGiangTravelGuideApp() {
                   }
                 }}
                 placeholder="Tìm Kiếm"
-                placeholder="Tìm không dấu: tra su, nui sam, bun ca, phu quoc..."
                 className="w-full pl-10 pr-20 py-2 rounded-full bg-white/95 backdrop-blur-md text-slate-800 placeholder-slate-400 text-sm font-medium shadow-md border border-white focus:outline-none focus:ring-2 focus:ring-sky-400"
               />
               <div className="absolute right-2 top-1.5 flex items-center gap-1">
@@ -4987,7 +5406,6 @@ export default function AnGiangTravelGuideApp() {
                     <span className="font-bold text-xs text-slate-900 block">Đi đâu?</span>
                     <span className="text-[10px] text-slate-500">
                       Xem {publicPlaces.filter((p) => p.isVisible && p.tab === "THAM_QUAN").length} điểm
-                      Xem {places.filter((p) => p.isVisible && p.tab === "THAM_QUAN").length} điểm
                       đến
                     </span>
                   </button>
@@ -5036,7 +5454,6 @@ export default function AnGiangTravelGuideApp() {
           {activeTab === "HOME" && (
             <FeaturedPlacesHome
               places={publicPlaces}
-              places={places}
               userLocation={userLocation}
               isAdmin={isAdminAuthenticated}
               onOpenPlace={openPlace}
@@ -5051,7 +5468,6 @@ export default function AnGiangTravelGuideApp() {
             activeTab !== "CAM_NANG" &&
             activeTab !== "ADMIN" && (
               <div className="sticky top-[66px] md:top-4 z-20 bg-white/80 backdrop-blur-xl backdrop-saturate-150 px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-3xl shadow-[0_8px_32px_rgba(15,23,42,0.22)] border border-white/70 ring-1 ring-black/5 space-y-2.5">
-              <div className="bg-white/90 backdrop-blur-md px-5 py-3.5 rounded-2xl shadow-md border border-white/80 space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-bold text-slate-700">Chọn khu vực khám phá:</span>
@@ -5062,7 +5478,6 @@ export default function AnGiangTravelGuideApp() {
                         value={quickRegionFilter}
                         onChange={(e) => setQuickRegionFilter(e.target.value)}
                         placeholder="Tìm Kiếm"
-                        placeholder="Gõ vài chữ đầu (VD: rach, pq, oc...)"
                         className="w-full pl-8 pr-6 py-1 rounded-lg border border-slate-300 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                       {quickRegionFilter && (
@@ -5105,8 +5520,7 @@ export default function AnGiangTravelGuideApp() {
                         : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
                     }`}
                   >
-                    {allRegionLabel} ({publicPlaces.filter((p) => p.isVisible).length})
-                    {allRegionLabel} ({places.filter((p) => p.isVisible).length})
+                    {allRegionLabel} ({tabScopedPlaces.filter((p) => p.isVisible).length})
                   </button>
 
                   {regions
@@ -5120,8 +5534,7 @@ export default function AnGiangTravelGuideApp() {
                       return (
                         featuredRegionNames.has(reg.name) ||
                         selectedRegion === reg.name ||
-                        publicPlaces.some((p) => p.isVisible && p.region === reg.name)
-                        places.some((p) => p.isVisible && p.region === reg.name)
+                        tabScopedPlaces.some((p) => p.isVisible && p.region === reg.name)
                       );
                     })
                     .sort((a, b) => {
@@ -5132,8 +5545,7 @@ export default function AnGiangTravelGuideApp() {
                       return rank(a) - rank(b);
                     })
                     .map((reg) => {
-                      const count = publicPlaces.filter(
-                      const count = places.filter(
+                      const count = tabScopedPlaces.filter(
                         (p) => p.isVisible && p.region === reg.name
                       ).length;
                       const isSelected = selectedRegion === reg.name;
@@ -5179,6 +5591,8 @@ export default function AnGiangTravelGuideApp() {
                   ? `Địa Điểm ${tabLabels.MUA_SAM}`
                   : activeTab === "LE_HOI"
                   ? `${tabLabels.LE_HOI} & Văn Hóa`
+                  : activeTab === "OCOP"
+                  ? `${tabLabels.OCOP || "Sản phẩm OCOP"} 5 Sao & 4 Sao An Giang`
                   : activeTab === "HANH_TRINH"
                   ? "Lập Hành Trình & Dự Toán Chi Phí Chính Xác"
                   : activeTab === "CAM_NANG"
@@ -5346,8 +5760,6 @@ export default function AnGiangTravelGuideApp() {
               places={publicPlaces}
               plannerPlaces={selectedPlannerPlaces}
               transitHubs={transitHubs}
-              places={places}
-              plannerPlaces={selectedPlannerPlaces}
               userLocation={userLocation}
               onSelectPlace={(p) => openPlace(p.id)}
               onGoToPlanner={() => setActiveTab("HANH_TRINH")}
@@ -6148,370 +6560,11 @@ export default function AnGiangTravelGuideApp() {
 
               {/* DANH SÁCH CÁC CHUYẾN ĐI ĐÃ LƯU */}
               <div className="bg-[#F5F7F8] p-4 sm:p-5 rounded-[18px] shadow-xl ring-8 ring-[#DCE8F0]/90 border border-white/80 space-y-4">
-              CHẾ ĐỘ 2: LẬP HÀNH TRÌNH, DỰ TOÁN CHI PHÍ & LƯU CHUYẾN ĐI
-             ================================================================= */}
-          {activeTab === "HANH_TRINH" && (
-            <div className="space-y-6">
-              {routeSummary.hasWaterCrossing && (
-                <div className="bg-amber-50/95 backdrop-blur-md border border-amber-300 p-4 rounded-2xl flex items-start gap-3 text-xs text-amber-950 shadow">
-                  <Ship className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-bold text-sm text-amber-900">
-                      Hành trình có chặng vượt biển ra đảo ({routeSummary.waterKm} km đường thủy):
-                    </p>
-                    <p className="mt-0.5">
-                      Hệ thống tự động tách riêng chặng tàu cao tốc/phà từ bến Rạch Giá hoặc Hà Tiên
-                      và <strong>không tính tiêu hao xăng đường bộ</strong> cho chặng vượt biển này.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* THANH ĐẶT TÊN & NÚT LƯU CHUYẾN ĐI */}
-              <div className="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl shadow-xl border border-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div className="flex-1 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow">
-                    <Bookmark className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase">
-                      Tên kế hoạch chuyến đi của bạn
-                    </label>
-                    <input
-                      type="text"
-                      value={tripTitle}
-                      onChange={(e) => setTripTitle(e.target.value)}
-                      placeholder="Nhập tên chuyến đi (VD: Khám phá Rạch Giá - Phú Quốc 3N2Đ)..."
-                      className="w-full mt-0.5 px-3 py-1.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={handleSaveCurrentTrip}
-                    className="px-5 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer transition"
-                  >
-                    {saveTripSuccess ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        <span>Đã lưu chuyến đi!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-4 h-4" />
-                        <span>Lưu chuyến đi ({plannerDestIds.length} điểm)</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => window.print()}
-                    className="px-4 py-2.5 rounded-2xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition"
-                  >
-                    <Printer className="w-4 h-4" />
-                    <span>In PDF</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-7 bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-5">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900">
-                        1. Điểm Dừng & Phương Tiện Di Chuyển
-                      </h3>
-                      <p className="text-xs text-slate-500">
-                        Quãng đường bộ: <strong>{routeSummary.roadKm} km</strong>
-                        {routeSummary.waterKm > 0 && ` • Đường biển: ${routeSummary.waterKm} km`}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleLoadBenchmarkTest}
-                      className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold"
-                    >
-                      ⚡ Nạp mẫu kiểm thử chuẩn (120km • 6L/100km)
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Số ngày đi</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={10}
-                        value={plannerDays}
-                        onChange={(e) => setPlannerDays(Math.max(1, Number(e.target.value)))}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Người lớn</label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={adultCount}
-                        onChange={(e) => setAdultCount(Math.max(1, Number(e.target.value)))}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Phương tiện</label>
-                      <select
-                        value={vehicleType}
-                        onChange={(e) => setVehicleType(e.target.value as any)}
-                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 font-bold"
-                      >
-                        <option value="personal_car">Ô tô cá nhân</option>
-                        <option value="motorbike">Xe máy phượt</option>
-                        <option value="rental_car">Thuê ô tô</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="font-bold text-slate-700 block mb-1">Số lượng xe</label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={vehicleCount}
-                        onChange={(e) => setVehicleCount(Math.max(1, Number(e.target.value)))}
-                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-                    <div>
-                      <label className="font-semibold text-slate-600 block mb-1">
-                        Quãng đường bộ (km)
-                      </label>
-                      <input
-                        type="number"
-                        value={routeSummary.roadKm}
-                        onChange={(e) => setCustomRoadKm(Math.max(0, Number(e.target.value)))}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-teal-800"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-semibold text-slate-600 block mb-1">
-                        Tiêu hao (L/100km)
-                      </label>
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={fuelConsumption}
-                        onChange={(e) => setFuelConsumption(Math.max(0, Number(e.target.value)))}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-semibold text-slate-600 block mb-1">
-                        Giá xăng (VND/lít)
-                      </label>
-                      <input
-                        type="number"
-                        step={500}
-                        value={fuelPrice}
-                        onChange={(e) => setFuelPrice(Math.max(0, Number(e.target.value)))}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="font-semibold text-slate-600 block mb-1">
-                        Cầu đường + Gửi xe
-                      </label>
-                      <input
-                        type="number"
-                        step={10000}
-                        value={tollFees + parkingFees}
-                        onChange={(e) => {
-                          setTollFees(Math.max(0, Number(e.target.value)));
-                          setParkingFees(0);
-                        }}
-                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase text-slate-500">
-                        Thứ tự các điểm tham quan ({selectedPlannerPlaces.length} điểm)
-                      </span>
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value && !plannerDestIds.includes(e.target.value)) {
-                            setPlannerDestIds((prev) => [...prev, e.target.value]);
-                          }
-                        }}
-                        value=""
-                        className="text-xs border border-teal-300 rounded-lg px-2.5 py-1 bg-teal-50 text-teal-900 font-semibold"
-                      >
-                        <option value="">+ Thêm điểm đến vào lộ trình...</option>
-                        {places
-                          .filter((p) => p.isVisible && !plannerDestIds.includes(p.id))
-                          .map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name} ({p.region})
-                            </option>
-                          ))}
-                      </select>
-                    </div>
-
-                    {selectedPlannerPlaces.length === 0 ? (
-                      <div className="p-6 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-xs text-slate-500">
-                        Chưa có địa điểm nào trong lộ trình. Hãy chọn từ menu phía trên hoặc bấm dấu{" "}
-                        <strong>+</strong> trên các thẻ địa điểm!
-                      </div>
-                    ) : (
-                      selectedPlannerPlaces.map((item, idx) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs"
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <span className="w-6 h-6 rounded-full bg-teal-700 text-white font-bold flex items-center justify-center shrink-0">
-                              {idx + 1}
-                            </span>
-                            <div>
-                              <p className="font-bold text-slate-900 text-sm">{item.name}</p>
-                              <p className="text-slate-500">
-                                📍 {item.region} • 🕒 {item.openingHours}
-                                {item.tab === "AM_THUC" ? ` • 🍴 ${getFoodPriceText(item)}` : ""}
-                                {item.tab === "NHA_NGHI" ? ` • 💰 ${getStayPriceText(item)}` : ""}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              onClick={() => movePlannerStop(idx, -1)}
-                              className="p-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100"
-                            >
-                              <ArrowUp className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => movePlannerStop(idx, 1)}
-                              className="p-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100"
-                            >
-                              <ArrowDown className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setPlannerDestIds((prev) => prev.filter((id) => id !== item.id))
-                              }
-                              className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="lg:col-span-5 bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-4 flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
-                        <Fuel className="w-5 h-5 text-teal-600" />
-                        <span>2. Bảng Dự Toán Ngân Sách</span>
-                      </h3>
-                    </div>
-
-                    <div className="space-y-2.5 text-xs">
-                      <div className="flex justify-between p-2.5 rounded-xl bg-teal-50/80 border border-teal-200">
-                        <span>
-                          Nhiên liệu đường bộ ({routeSummary.roadKm} km •{" "}
-                          <strong>{costBreakdown.totalFuelLiters} lít</strong>):
-                        </span>
-                        <strong className="text-teal-900">
-                          {costBreakdown.totalFuelCost.toLocaleString("vi-VN")} VND
-                        </strong>
-                      </div>
-
-                      <div className="flex justify-between px-2.5 py-1.5">
-                        <span>Phí cầu đường & bến bãi ({vehicleCount} xe):</span>
-                        <strong>
-                          {(costBreakdown.totalTolls + costBreakdown.totalParking).toLocaleString(
-                            "vi-VN"
-                          )}{" "}
-                          VND
-                        </strong>
-                      </div>
-
-                      {routeSummary.hasWaterCrossing && (
-                        <div className="flex justify-between px-2.5 py-1.5 text-amber-800 bg-amber-50 rounded-lg">
-                          <span>Vé tàu cao tốc/phà ra đảo:</span>
-                          <strong>{costBreakdown.ferryCost.toLocaleString("vi-VN")} VND</strong>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between px-2.5 py-1.5 border-t border-slate-200 font-bold text-slate-900">
-                        <span>Tổng chi phí di chuyển:</span>
-                        <span className="text-teal-700">
-                          {costBreakdown.transportTotal.toLocaleString("vi-VN")} VND
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between px-2.5 py-1.5">
-                        <span>
-                          Ăn uống ({adultCount + childCount} người × {plannerDays} ngày):
-                        </span>
-                        <strong>{costBreakdown.foodTotal.toLocaleString("vi-VN")} VND</strong>
-                      </div>
-
-                      <div className="flex justify-between px-2.5 py-1.5">
-                        <span>
-                          Lưu trú ({Math.max(0, plannerDays - 1)} đêm × {roomCount} phòng):
-                        </span>
-                        <strong>
-                          {costBreakdown.accommodationTotal.toLocaleString("vi-VN")} VND
-                        </strong>
-                      </div>
-
-                      <div className="flex justify-between px-2.5 py-1.5">
-                        <span>Chi phí tại điểm:</span>
-                        <strong>{costBreakdown.ticketTotal.toLocaleString("vi-VN")} VND</strong>
-                      </div>
-
-                      <div className="flex justify-between px-2.5 py-1.5 text-slate-500">
-                        <span>Dự phòng phát sinh ({contingencyPercent}%):</span>
-                        <strong>{costBreakdown.contingencyCost.toLocaleString("vi-VN")} VND</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-4 rounded-2xl bg-slate-900 text-white space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-300">TỔNG DỰ TOÁN TOÀN ĐOÀN:</span>
-                      <span className="text-xl font-extrabold text-amber-300">
-                        {costBreakdown.grandTotal.toLocaleString("vi-VN")} VND
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs border-t border-slate-700 pt-2">
-                      <span className="text-slate-300">
-                        Bình quân mỗi người ({adultCount + childCount} người):
-                      </span>
-                      <span className="text-base font-bold text-emerald-300">
-                        {costBreakdown.perPerson.toLocaleString("vi-VN")} VND/người
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* DANH SÁCH CÁC CHUYẾN ĐI ĐÃ LƯU */}
-              <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-2">
                     <Bookmark className="w-5 h-5 text-teal-600" />
                     <h3 className="text-lg font-bold text-slate-900">
                       Chuyến Đi Đã Lưu ({savedTrips.length})
-                      3. Danh Sách Chuyến Đi Đã Lưu ({savedTrips.length})
                     </h3>
                   </div>
                 </div>
@@ -6641,6 +6694,20 @@ export default function AnGiangTravelGuideApp() {
              ================================================================= */}
           {activeTab === "ADMIN" && isAdminAuthenticated && (
             <div className="space-y-6">
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    document
+                      .getElementById("ocop-admin-section")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 shadow"
+                >
+                  <Award className="w-4 h-4" />
+                  Tới mục Sản phẩm OCOP ({ocopProducts.length})
+                </button>
+              </div>
               {/* QUẢN LÝ KHU VỰC */}
               <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-5">
                 <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
@@ -6668,6 +6735,7 @@ export default function AnGiangTravelGuideApp() {
                       "NHA_NGHI",
                       "MUA_SAM",
                       "LE_HOI",
+                      "OCOP",
                       "HANH_TRINH",
                       "CAM_NANG",
                     ] as const
@@ -6878,6 +6946,7 @@ export default function AnGiangTravelGuideApp() {
                       <option value="NHA_NGHI">{tabLabels.NHA_NGHI}</option>
                       <option value="MUA_SAM">{tabLabels.MUA_SAM}</option>
                       <option value="LE_HOI">{tabLabels.LE_HOI}</option>
+                      <option value="OCOP">🏅 {tabLabels.OCOP || "Sản phẩm OCOP"}</option>
                     </select>
                   </div>
                 </div>
@@ -7266,7 +7335,6 @@ export default function AnGiangTravelGuideApp() {
                           : `Chuyển ${base64ImageCount} ảnh cũ sang file`}
                       </button>
                     )}
-                  <div className="flex items-center gap-2 text-xs font-bold">
                     <button
                       type="button"
                       onClick={() => setCollapsedRegions([])}
@@ -7315,6 +7383,7 @@ export default function AnGiangTravelGuideApp() {
                     <option value="NHA_NGHI">{tabLabels.NHA_NGHI}</option>
                     <option value="MUA_SAM">{tabLabels.MUA_SAM}</option>
                     <option value="LE_HOI">{tabLabels.LE_HOI}</option>
+                    <option value="OCOP">{tabLabels.OCOP || "Sản phẩm OCOP"}</option>
                   </select>
                 </div>
 
@@ -7365,7 +7434,6 @@ export default function AnGiangTravelGuideApp() {
                           {adminNoImageOnly
                             ? "🎉 Không còn địa điểm nào thiếu ảnh trong bộ lọc này."
                             : "Không có địa điểm nào phù hợp với bộ lọc."}
-                          Không có địa điểm nào phù hợp với bộ lọc.
                         </td>
                       </tr>
                     )}
@@ -7435,12 +7503,6 @@ export default function AnGiangTravelGuideApp() {
                                 className="w-14 h-10 object-cover rounded-lg border border-slate-200"
                               />
                             )}
-                            <img
-                              src={p.imageUrl}
-                              alt={p.name}
-                              referrerPolicy="no-referrer"
-                              className="w-14 h-10 object-cover rounded-lg border border-slate-200"
-                            />
                             <span className="bg-[#204E4A] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
                               {p.subCategory} {p.badgeIcon}
                             </span>
@@ -7506,7 +7568,6 @@ export default function AnGiangTravelGuideApp() {
                                 phone: p.phone,
                                 shortDesc: p.shortDesc,
                                 imageUrl: isMissingImage(p) ? "" : p.imageUrl,
-                                imageUrl: p.imageUrl,
                                 tags: p.tags,
                               });
                             }}
@@ -7547,6 +7608,334 @@ export default function AnGiangTravelGuideApp() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* QUẢN LÝ SẢN PHẨM OCOP */}
+              <div
+                id="ocop-admin-section"
+                className="bg-white/95 backdrop-blur-md p-4 sm:p-6 rounded-3xl shadow-xl border border-white space-y-5"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Award className="w-5 h-5 text-amber-600" />
+                      3. Sản Phẩm OCOP ({ocopProducts.length})
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Thêm / sửa sản phẩm và hình ảnh. Nhập Excel bất kỳ có cột <strong>Tên sản phẩm</strong>
+                      (các cột Chủ thể, Nơi cung cấp, Nhóm, Hạng sao, Đôi nét, Hình ảnh là tùy chọn; không có cột
+                      hạng sao thì dùng hạng đang chọn trong form). Du khách xem ở tab{" "}
+                      <strong>{tabLabels.OCOP || "Sản phẩm OCOP"}</strong> trên menu.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <label className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      Nhập sản phẩm OCOP từ Excel (.xlsx, .csv)
+                      <input
+                        type="file"
+                        accept=".xlsx,.xls,.csv"
+                        onChange={handleOcopImportExcel}
+                        className="hidden"
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleSeedOcopSamples}
+                      className="px-4 py-2 rounded-xl bg-white border border-emerald-700 text-emerald-800 hover:bg-emerald-50 font-bold text-xs flex items-center gap-2"
+                    >
+                      Nạp 20 sản phẩm mẫu (5 & 4 sao)
+                    </button>
+                  </div>
+                </div>
+
+                <form
+                  id="ocop-admin-form"
+                  onSubmit={handleOcopSave}
+                  className="space-y-4 bg-amber-50/50 p-4 rounded-2xl border border-amber-200"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-amber-950">
+                      {ocopEditingId ? "✏️ Đang sửa sản phẩm" : "➕ Thêm sản phẩm OCOP mới"}
+                    </span>
+                    {ocopEditingId && (
+                      <button
+                        type="button"
+                        onClick={resetOcopForm}
+                        className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1"
+                      >
+                        <X className="w-4 h-4" /> Hủy sửa
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Tên sản phẩm *</label>
+                      <input
+                        type="text"
+                        required
+                        value={ocopForm.name}
+                        onChange={(e) => setOcopForm({ ...ocopForm, name: e.target.value })}
+                        placeholder="VD: Mật thốt nốt Palmania"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Nhóm sản phẩm</label>
+                      <input
+                        type="text"
+                        list="ocop-group-list"
+                        value={ocopForm.group}
+                        onChange={(e) => setOcopForm({ ...ocopForm, group: e.target.value })}
+                        placeholder="VD: Nước mắm Phú Quốc"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      />
+                      <datalist id="ocop-group-list">
+                        {Array.from(
+                          new Set([...OCOP_GROUP_SUGGESTIONS, ...ocopProducts.map((p) => p.subCategory)])
+                        ).map((g) => (
+                          <option key={g} value={g} />
+                        ))}
+                      </datalist>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Chủ thể sản phẩm</label>
+                      <input
+                        type="text"
+                        value={ocopForm.owner}
+                        onChange={(e) => setOcopForm({ ...ocopForm, owner: e.target.value })}
+                        placeholder="VD: Công ty Cổ phần Palmania"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Hạng sao OCOP</label>
+                      <select
+                        value={ocopForm.stars}
+                        onChange={(e) => setOcopForm({ ...ocopForm, stars: Number(e.target.value) })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      >
+                        <option value={5}>⭐ 5 sao</option>
+                        <option value={4}>4 sao</option>
+                        <option value={3}>3 sao</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Khu vực</label>
+                      <select
+                        value={ocopForm.region || regions[0]?.name || ""}
+                        onChange={(e) => setOcopForm({ ...ocopForm, region: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      >
+                        {regions.map((r) => (
+                          <option key={r.id} value={r.name}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Nơi cung cấp (Xã / Phường / Đặc khu)
+                      </label>
+                      <input
+                        type="text"
+                        value={ocopForm.address}
+                        onChange={(e) => setOcopForm({ ...ocopForm, address: e.target.value })}
+                        placeholder="VD: Xã Tri Tôn (trước đây là TT. Tri Tôn, H. Tri Tôn)"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      />
+                    </div>
+                    <div className="md:col-span-3">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Đôi nét về sản phẩm</label>
+                      <textarea
+                        rows={3}
+                        value={ocopForm.desc}
+                        onChange={(e) => setOcopForm({ ...ocopForm, desc: e.target.value })}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 items-start">
+                    <div className="w-full sm:w-40 h-28 rounded-xl overflow-hidden bg-slate-200 border border-slate-300 shrink-0 flex items-center justify-center text-xs text-slate-500">
+                      {ocopForm.imageUrl ? (
+                        <img
+                          src={ocopForm.imageUrl}
+                          alt="Xem trước"
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        "Chưa có ảnh"
+                      )}
+                    </div>
+                    <div className="flex-1 w-full space-y-2">
+                      <label className="block text-xs font-bold text-slate-700">Hình ảnh sản phẩm</label>
+                      <div className="flex flex-wrap gap-2">
+                        <label className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow">
+                          <Upload className="w-4 h-4" />
+                          {ocopUploading ? "Đang tải ảnh..." : "Tải ảnh từ máy"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleOcopImageUpload}
+                            disabled={ocopUploading}
+                            className="hidden"
+                          />
+                        </label>
+                        {ocopForm.imageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setOcopForm({ ...ocopForm, imageUrl: "" })}
+                            className="px-3 py-2 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs"
+                          >
+                            Xóa ảnh
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={ocopForm.imageUrl}
+                        onChange={(e) => setOcopForm({ ...ocopForm, imageUrl: e.target.value })}
+                        placeholder="Hoặc dán link ảnh (https://...)"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={ocopUploading}
+                      className="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-bold text-sm flex items-center gap-1.5"
+                    >
+                      <Save className="w-4 h-4" />
+                      {ocopEditingId ? "Lưu thay đổi" : "Thêm sản phẩm"}
+                    </button>
+                  </div>
+                </form>
+
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+                  <input
+                    type="text"
+                    value={ocopSearch}
+                    onChange={(e) => setOcopSearch(e.target.value)}
+                    placeholder="Tìm sản phẩm OCOP..."
+                    className="w-full pl-10 pr-3 py-2 rounded-xl border border-slate-300 text-sm"
+                  />
+                </div>
+
+                {ocopVisibleList.length === 0 ? (
+                  <p className="text-sm text-slate-500 text-center py-4">
+                    Chưa có sản phẩm OCOP. Bấm &quot;Nạp 20 sản phẩm OCOP&quot; hoặc thêm mới ở trên.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                    {ocopVisibleList.map((p) => {
+                      const info = parseOcopInfo(p.culturalHistory);
+                      return (
+                        <div
+                          key={p.id}
+                          className={`flex gap-3 p-3 rounded-2xl border bg-white ${
+                            p.isVisible ? "border-slate-200" : "border-slate-200 opacity-60"
+                          }`}
+                        >
+                          <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-200 shrink-0 relative">
+                            {isMissingImage(p) ? (
+                              <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-rose-600 text-center px-1">
+                                Chưa có ảnh
+                              </div>
+                            ) : (
+                              <img
+                                src={p.imageUrl}
+                                alt={p.name}
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <p className="font-bold text-sm text-slate-900 line-clamp-2">{p.name}</p>
+                            <p className="text-[11px] text-slate-600 truncate">
+                              {p.subCategory} • {info.owner || "—"}
+                            </p>
+                            <p className="text-[11px] text-slate-500 truncate">
+                              📍 {p.region} • {info.stars} sao
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                              <select
+                                value={info.stars}
+                                onChange={(e) => handleOcopSetStars(p.id, Number(e.target.value))}
+                                title="Đổi hạng sao OCOP (đánh giá lại)"
+                                className={`px-2 py-1 rounded-lg border text-[11px] font-bold ${
+                                  info.stars === 5
+                                    ? "bg-amber-50 border-amber-300 text-amber-800"
+                                    : "bg-white border-slate-300 text-slate-700"
+                                }`}
+                              >
+                                <option value={5}>⭐ 5 sao</option>
+                                <option value={4}>4 sao</option>
+                                <option value={3}>3 sao</option>
+                              </select>
+                              <label className="px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100 text-[11px] font-bold cursor-pointer flex items-center gap-1">
+                                <Upload className="w-3.5 h-3.5" />
+                                {isMissingImage(p) ? "Thêm ảnh" : "Đổi ảnh"}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleQuickImageUpload(p.id, e)}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleOcopEdit(p)}
+                                className="p-1.5 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                title="Sửa"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setPlaces((prev) =>
+                                    prev.map((item) =>
+                                      item.id === p.id ? { ...item, isVisible: !item.isVisible } : item
+                                    )
+                                  )
+                                }
+                                className="p-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                title={p.isVisible ? "Ẩn khỏi du khách" : "Hiện cho du khách"}
+                              >
+                                {p.isVisible ? (
+                                  <EyeOff className="w-3.5 h-3.5" />
+                                ) : (
+                                  <Eye className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (window.confirm(`Xóa sản phẩm "${p.name}"?`)) {
+                                    setPlaces((prev) => prev.filter((item) => item.id !== p.id));
+                                    if (ocopEditingId === p.id) resetOcopForm();
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100"
+                                title="Xóa"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* QUẢN LÝ BẾN TÀU / BẾN XE / SÂN BAY TRÊN BẢN ĐỒ */}
@@ -7854,10 +8243,6 @@ export default function AnGiangTravelGuideApp() {
               {importTab === "HUB"
                 ? "Cột cần có: Tên, Loại (Bến tàu / Bến xe / Sân bay — bỏ trống thì tự nhận từ tên), Tọa Độ (VD: 10.0145, 105.0752) hoặc 2 cột Vĩ độ + Kinh độ. Cột Ghi chú, Địa chỉ không bắt buộc."
                 : importTab === "AM_THUC"
-            </div>
-
-            <p className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-              {importTab === "AM_THUC"
                 ? "Cột cần có: Tên Địa Điểm, Địa chỉ, Khu vực, Đánh giá, Số đánh giá, Đánh Giá Nổi Bật, Tọa Độ + Giá Tiền của quán (hệ thống tính giá trung bình)."
                 : importTab === "THAM_QUAN"
                 ? "Cột cần có: Tên Địa Điểm, Địa chỉ, Khu vực, Đánh giá, Số đánh giá, Đánh Giá Nổi Bật, Tọa Độ + Mô tả về địa điểm tham quan."
@@ -7869,7 +8254,6 @@ export default function AnGiangTravelGuideApp() {
                 importTab === "HUB" ? "hidden" : "flex"
               } items-start gap-2.5 p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-slate-800 cursor-pointer`}
             >
-            <label className="flex items-start gap-2.5 p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-slate-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={autoFindImages}
@@ -7999,7 +8383,7 @@ export default function AnGiangTravelGuideApp() {
           onClick={() => setShowMobileMore((prev) => !prev)}
           className={`relative flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-bold transition ${
             showMobileMore ||
-            ["NHA_NGHI", "MUA_SAM", "LE_HOI", "CAM_NANG", "ADMIN"].includes(activeTab)
+            ["NHA_NGHI", "MUA_SAM", "LE_HOI", "OCOP", "CAM_NANG", "ADMIN"].includes(activeTab)
               ? "text-teal-700"
               : "text-slate-500"
           }`}
@@ -8035,6 +8419,7 @@ export default function AnGiangTravelGuideApp() {
                   { id: "NHA_NGHI", label: tabLabels.NHA_NGHI || "Nhà nghỉ", icon: Bed },
                   { id: "MUA_SAM", label: tabLabels.MUA_SAM || "Mua sắm", icon: ShoppingBag },
                   { id: "LE_HOI", label: tabLabels.LE_HOI || "Lễ hội", icon: Sparkles },
+                  { id: "OCOP", label: tabLabels.OCOP || "Sản phẩm OCOP", icon: Award },
                   { id: "CAM_NANG", label: tabLabels.CAM_NANG || "Cẩm nang", icon: ShieldCheck },
                 ] as const
               ).map((item) => {
@@ -8310,12 +8695,14 @@ export default function AnGiangTravelGuideApp() {
                   {selectedPlace.durationMinutes} phút xe)
                 </span>
               </p>
-              <p className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-teal-600 shrink-0" />
-                <span>
-                  <strong>Giờ mở cửa:</strong> {selectedPlace.openingHours}
-                </span>
-              </p>
+              {selectedPlace.tab !== "OCOP" && (
+                <p className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-teal-600 shrink-0" />
+                  <span>
+                    <strong>Giờ mở cửa:</strong> {selectedPlace.openingHours}
+                  </span>
+                </p>
+              )}
               <p className="flex items-center gap-1.5">
                 <Phone className="w-4 h-4 text-teal-600 shrink-0" />
                 <span>
@@ -8331,8 +8718,14 @@ export default function AnGiangTravelGuideApp() {
                 </p>
               )}
               {selectedPlace.culturalHistory && (
-                <p>
-                  <strong>Câu chuyện & Giá trị văn hóa:</strong> {selectedPlace.culturalHistory}
+                <p className={selectedPlace.tab === "OCOP" ? "whitespace-pre-line" : undefined}>
+                  <strong>
+                    {selectedPlace.tab === "OCOP"
+                      ? "Thông tin công nhận OCOP:"
+                      : "Câu chuyện & Giá trị văn hóa:"}
+                  </strong>{" "}
+                  {selectedPlace.tab === "OCOP" ? <br /> : null}
+                  {selectedPlace.culturalHistory}
                 </p>
               )}
               {selectedPlace.behaviorNotes && (
@@ -8451,7 +8844,7 @@ export default function AnGiangTravelGuideApp() {
             )}
           </div>
         </div>
-      )} 
+      )}
     </div>
   );
 }
