@@ -5,7 +5,7 @@ import path from "path";
 import { applyStateDelta, SharedState, StateDelta } from "../../../lib/sync";
 
 const DATA_FILE_PATH =
-  process.env.SHARED_DATA_PATH || path.join(process.cwd(), "shared-travel-data.json");
+  process.env.SHARED_DATA_PATH || path.join(/*turbopackIgnore: true*/ process.cwd(), "shared-travel-data.json");
 const BACKUP_DIR = path.join(path.dirname(DATA_FILE_PATH), "backups");
 
 // Hàng đợi: "đọc -> áp thay đổi -> ghi" chạy lần lượt, không bao giờ chồng nhau
@@ -15,13 +15,13 @@ let healQueue: Promise<any> = Promise.resolve();
 
 async function readLatestValidBackup(): Promise<any | null> {
   try {
-    const files = (await fs.readdir(BACKUP_DIR))
+    const files = (await fs.readdir(/*turbopackIgnore: true*/ BACKUP_DIR))
       .filter((f) => f.endsWith(".json"))
       .sort()
       .reverse();
     for (const f of files) {
       try {
-        const data = JSON.parse(await fs.readFile(path.join(BACKUP_DIR, f), "utf-8"));
+        const data = JSON.parse(await fs.readFile(/*turbopackIgnore: true*/ path.join(BACKUP_DIR, f), "utf-8"));
         if (data && Array.isArray(data.places) && data.places.length > 0) return data;
       } catch {}
     }
@@ -33,7 +33,7 @@ async function readLatestValidBackup(): Promise<any | null> {
 // (antivirus, OneDrive/Dropbox đang quét file) nên thử lại vài lần.
 async function writeFileAtomic(target: string, content: string) {
   const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
-  const handle = await fs.open(tmp, "w");
+  const handle = await fs.open(/*turbopackIgnore: true*/ tmp, "w");
   try {
     await handle.writeFile(content, "utf-8");
     await handle.sync(); // đảm bảo dữ liệu đã xuống đĩa trước khi đổi tên
@@ -43,7 +43,7 @@ async function writeFileAtomic(target: string, content: string) {
   let lastErr: any;
   for (let i = 0; i < 6; i++) {
     try {
-      await fs.rename(tmp, target);
+      await fs.rename(/*turbopackIgnore: true*/ tmp, target);
       return;
     } catch (err: any) {
       lastErr = err;
@@ -51,7 +51,7 @@ async function writeFileAtomic(target: string, content: string) {
       await new Promise((r) => setTimeout(r, 50 * (i + 1)));
     }
   }
-  await fs.unlink(tmp).catch(() => {});
+  await fs.unlink(/*turbopackIgnore: true*/ tmp).catch(() => {});
   throw lastErr;
 }
 
@@ -59,7 +59,7 @@ async function writeFileAtomic(target: string, content: string) {
 async function loadCurrent(): Promise<SharedState | null> {
   let raw: string;
   try {
-    raw = await fs.readFile(DATA_FILE_PATH, "utf-8");
+    raw = await fs.readFile(/*turbopackIgnore: true*/ DATA_FILE_PATH, "utf-8");
   } catch (err: any) {
     if (err?.code === "ENOENT") return null;
     throw err;
@@ -73,11 +73,11 @@ async function loadCurrent(): Promise<SharedState | null> {
     const healed = (healQueue = healQueue.then(async () => {
       try {
         // Có thể lần gọi trước đã sửa xong
-        return JSON.parse(await fs.readFile(DATA_FILE_PATH, "utf-8")) as SharedState;
+        return JSON.parse(await fs.readFile(/*turbopackIgnore: true*/ DATA_FILE_PATH, "utf-8")) as SharedState;
       } catch {}
       const backup = await readLatestValidBackup();
       if (!backup) return null;
-      await fs.copyFile(DATA_FILE_PATH, DATA_FILE_PATH + `.corrupt-${Date.now()}`).catch(() => {});
+      await fs.copyFile(/*turbopackIgnore: true*/ DATA_FILE_PATH, DATA_FILE_PATH + `.corrupt-${Date.now()}`).catch(() => {});
       await writeFileAtomic(DATA_FILE_PATH, JSON.stringify(backup, null, 2));
       console.warn("[/api/state] Đã khôi phục từ bản sao lưu gần nhất và ghi lại file dữ liệu.");
       return backup as SharedState;
