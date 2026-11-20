@@ -1,10 +1,16 @@
+<<<<<<< HEAD
 // VỊ TRÍ FILE: src/app/page.tsx
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import * as XLSX from "xlsx";
 import { createPortal } from "react-dom";
+<<<<<<< HEAD
 import { diffState, applyStateDelta, SharedState } from "../lib/sync";
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 import {
   MapPin,
   Navigation,
@@ -122,6 +128,7 @@ interface SavedTripItem {
   waterKm: number;
   totalCost: number;
   perPersonCost: number;
+<<<<<<< HEAD
   // Các lựa chọn bổ sung của bộ lập hành trình 4 bước (chuyến cũ có thể không có)
   originName?: string;
   startDate?: string;
@@ -154,6 +161,8 @@ interface TransitHub {
   lat: number;
   lng: number;
   note: string;
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 }
 
 interface UserAccount {
@@ -181,6 +190,7 @@ function matchesVietnameseSearch(text: string | undefined | null, query: string)
   return removeVietnameseTones(text).includes(removeVietnameseTones(query));
 }
 
+<<<<<<< HEAD
 // Ảnh mặc định gắn tạm cho địa điểm chưa có ảnh thật
 const DEFAULT_PLACE_IMAGE_URL =
   "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80";
@@ -191,6 +201,8 @@ function isMissingImage(p: { imageUrl?: string | null }): boolean {
   return !url || url === DEFAULT_PLACE_IMAGE_URL;
 }
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 // Hàng ngang cuộn được: vuốt bằng ngón tay (điện thoại) hoặc nhấn giữ chuột rồi kéo (máy tính)
 function HorizontalDragScroll({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -655,6 +667,7 @@ function SearchableRegionSelect({
 
   const totalVisible = useMemo(() => places.filter((p) => p.isVisible).length, [places]);
 
+<<<<<<< HEAD
   // Sắp xếp theo số thứ tự 1-102; khu vực ngoài danh sách xếp cuối, giữ thứ tự cũ
   const orderedRegions = useMemo(() => {
     return regions
@@ -666,17 +679,27 @@ function SearchableRegionSelect({
   const filteredRegions = useMemo(() => {
     const q = removeVietnameseTones(keyword);
     if (!q) return orderedRegions;
+=======
+  const filteredRegions = useMemo(() => {
+    const q = removeVietnameseTones(keyword);
+    if (!q) return regions;
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
     const startsWithList: RegionItem[] = [];
     const includesList: RegionItem[] = [];
 
+<<<<<<< HEAD
     orderedRegions.forEach((reg) => {
+=======
+    regions.forEach((reg) => {
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
       const cleanName = removeVietnameseTones(reg.name);
       const cleanLabel = removeVietnameseTones(reg.displayLabel);
       const initials = cleanName
         .split(/\s+/)
         .map((w) => w[0])
         .join("");
+<<<<<<< HEAD
       const no = getAreaNumber(reg.name);
 
       if (/^\d+$/.test(q) && no !== undefined) {
@@ -684,6 +707,10 @@ function SearchableRegionSelect({
         if (String(no) === q) startsWithList.push(reg);
         else if (String(no).startsWith(q)) includesList.push(reg);
       } else if (
+=======
+
+      if (
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
         cleanName.startsWith(q) ||
         cleanLabel.startsWith(q) ||
         initials.startsWith(q)
@@ -695,7 +722,11 @@ function SearchableRegionSelect({
     });
 
     return [...startsWithList, ...includesList];
+<<<<<<< HEAD
   }, [orderedRegions, keyword]);
+=======
+  }, [regions, keyword]);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   const selectedDisplay = useMemo(() => {
     if (includeAllOption && value === "ALL") {
@@ -745,7 +776,11 @@ function SearchableRegionSelect({
                     setIsOpen(false);
                   }
                 }}
+<<<<<<< HEAD
                 placeholder="Tìm Kiếm)"
+=======
+                placeholder="Gõ vài chữ đầu (VD: rach, pq, oc...)"
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                 className="w-full pl-8 pr-7 py-1.5 rounded-xl border border-slate-300 text-xs text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
               {keyword && (
@@ -800,6 +835,7 @@ function SearchableRegionSelect({
                         : "text-slate-700 font-medium"
                     }`}
                   >
+<<<<<<< HEAD
                     <span className="flex items-center gap-2 min-w-0">
                       {getAreaNumber(reg.name) !== undefined && (
                         <span
@@ -814,6 +850,9 @@ function SearchableRegionSelect({
                         {variant === "sidebar" ? reg.displayLabel : reg.name}
                       </span>
                     </span>
+=======
+                    <span>{variant === "sidebar" ? reg.displayLabel : reg.name}</span>
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                     <span
                       className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                         active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
@@ -883,6 +922,7 @@ function isInAnGiangAreas(region: string): boolean {
   return AN_GIANG_AREA_SET.has(normalizeAreaName(region));
 }
 
+<<<<<<< HEAD
 // Thứ tự & số thứ tự chính thức của 102 xã / phường / đặc khu An Giang (đúng như bảng danh sách)
 const AN_GIANG_AREAS_OFFICIAL_ORDER: string[] = [
   "An Phú", "Vĩnh Hậu", "Nhơn Hội", "Khánh Bình", "Phú Hữu", "Tân An", "Châu Phong",
@@ -1584,6 +1624,8 @@ function TripPlacePicker({
   );
 }
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 // Khóa nhận diện địa điểm trùng: tên + khu vực (không phân biệt hoa/thường, dấu, khoảng trắng thừa)
 function makePlaceKey(name: string, region: string): string {
   const clean = (s: string) => removeVietnameseTones(s || "").replace(/\s+/g, " ");
@@ -1685,7 +1727,11 @@ const EMERGENCY_HOTLINES = [
 const HERO_BG_URL =
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=85";
 // --- DỮ LIỆU BẾN TÀU, BẾN XE, SÂN BAY CỐ ĐỊNH TRÊN BẢN ĐỒ ---
+<<<<<<< HEAD
 const DEFAULT_TRANSIT_HUBS: TransitHub[] = [
+=======
+const TRANSIT_HUBS = [
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   { id: "hub-1", name: "Bến tàu Rạch Giá", type: "ferry", lat: 10.0145, lng: 105.0752, note: "Tàu cao tốc đi Phú Quốc, Hòn Sơn, Nam Du, Thổ Châu" },
   { id: "hub-2", name: "Bến tàu Hà Tiên", type: "ferry", lat: 10.3792, lng: 104.4795, note: "Tàu cao tốc & phà đi Phú Quốc, Quần đảo Hải Tặc" },
   { id: "hub-3", name: "Cảng Bãi Vòng Phú Quốc", type: "ferry", lat: 10.1462, lng: 104.0625, note: "Cảng tàu cao tốc chính tại Phú Quốc" },
@@ -1700,6 +1746,7 @@ const DEFAULT_TRANSIT_HUBS: TransitHub[] = [
   { id: "hub-12", name: "Bến phà Châu Giang / Tân Châu", type: "ferry", lat: 10.7105, lng: 105.1325, note: "Kết nối giao thông đường thủy sông Hậu - sông Tiền" },
 ];
 
+<<<<<<< HEAD
 const HUB_META: Record<HubType, { label: string; symbol: string; plural: string }> = {
   ferry: { label: "Bến tàu", symbol: "⚓", plural: "Bến tàu / cảng / phà" },
   bus: { label: "Bến xe", symbol: "🚌", plural: "Bến xe" },
@@ -1723,6 +1770,8 @@ function detectHubType(typeText: string, name: string): HubType {
   return "ferry";
 }
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 // Phân loại màu chấm tròn trên bản đồ theo đúng bảng chú thích
 function getPlaceMapCategory(place: PlaceItem): { key: string; label: string; color: string } {
   const text = `${place.subCategory} ${place.name} ${place.tags.join(" ")}`.toLowerCase();
@@ -1761,7 +1810,10 @@ const AN_GIANG_VIEW: [[number, number], [number, number]] = [
 function InteractiveAnGiangMap({
   places,
   plannerPlaces,
+<<<<<<< HEAD
   transitHubs,
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   userLocation,
   onSelectPlace,
   onGoToPlanner,
@@ -1769,7 +1821,10 @@ function InteractiveAnGiangMap({
 }: {
   places: PlaceItem[];
   plannerPlaces: PlaceItem[];
+<<<<<<< HEAD
   transitHubs: TransitHub[];
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   userLocation: { lat: number; lng: number; label: string };
   onSelectPlace: (p: PlaceItem) => void;
   onGoToPlanner: () => void;
@@ -1779,6 +1834,7 @@ function InteractiveAnGiangMap({
   const mapInstanceRef = useRef<any>(null);
   const layerGroupRef = useRef<any>(null);
 
+<<<<<<< HEAD
   const [visibleTabs, setVisibleTabs] = useState<Record<string, boolean>>({
     THAM_QUAN: true,
     AM_THUC: false,
@@ -1791,6 +1847,11 @@ function InteractiveAnGiangMap({
     bus: true,
     airport: true,
   });
+=======
+  const [showDestinations, setShowDestinations] = useState<boolean>(true);
+  const [showAccommodations, setShowAccommodations] = useState<boolean>(false);
+  const [showTransitHubs, setShowTransitHubs] = useState<boolean>(true);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [leafletReady, setLeafletReady] = useState<boolean>(false);
 
   // Tự động nạp thư viện Leaflet từ CDN (Không cần cài thêm gói hay API Key)
@@ -1880,6 +1941,7 @@ function InteractiveAnGiangMap({
     const group = layerGroupRef.current;
     group.clearLayers();
 
+<<<<<<< HEAD
     // 1. Vẽ điểm đến theo từng loại đã bật (Tham quan, Ẩm thực, Mua sắm, Nhà nghỉ, Lễ hội)
     places
       .filter((p) => p.isVisible && visibleTabs[p.tab])
@@ -1889,11 +1951,21 @@ function InteractiveAnGiangMap({
         if (p.tab === "THAM_QUAN") {
           const cat = getPlaceMapCategory(p);
           icon = L.divIcon({
+=======
+    // 1. Vẽ các điểm đến tham quan / ẩm thực / lễ hội
+    if (showDestinations) {
+      places
+        .filter((p) => p.isVisible && p.tab !== "NHA_NGHI")
+        .forEach((p) => {
+          const cat = getPlaceMapCategory(p);
+          const icon = L.divIcon({
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
             className: "custom-dot-marker",
             html: `<div style="width:14px;height:14px;border-radius:9999px;background:${cat.color};border:2.5px solid #ffffff;box-shadow:0 2px 5px rgba(0,0,0,0.35);cursor:pointer;"></div>`,
             iconSize: [14, 14],
             iconAnchor: [7, 7],
           });
+<<<<<<< HEAD
           tip = `<b>${p.name}</b><br/>${p.region} • ${cat.label}`;
         } else {
           const layer = MAP_PLACE_LAYERS.find((l) => l.tab === p.tab);
@@ -1916,12 +1988,52 @@ function InteractiveAnGiangMap({
       .filter((hub) => visibleHubs[hub.type])
       .forEach((hub) => {
         const symbol = HUB_META[hub.type].symbol;
+=======
+
+          const marker = L.marker([p.latitude, p.longitude], { icon });
+          marker.bindTooltip(`<b>${p.name}</b><br/>${p.region} • ${cat.label}`, {
+            direction: "top",
+            offset: [0, -6],
+          });
+          marker.on("click", () => onSelectPlace(p));
+          marker.addTo(group);
+        });
+    }
+
+    // 2. Vẽ các cơ sở lưu trú (Khách sạn / Resort)
+    if (showAccommodations) {
+      places
+        .filter((p) => p.isVisible && p.tab === "NHA_NGHI")
+        .forEach((p) => {
+          const icon = L.divIcon({
+            className: "custom-hotel-marker",
+            html: `<div style="width:22px;height:22px;border-radius:6px;background:#0f766e;color:#ffffff;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">🏨</div>`,
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+          });
+
+          const marker = L.marker([p.latitude, p.longitude], { icon });
+          marker.bindTooltip(`<b>${p.name}</b><br/>Lưu trú tại ${p.region}`, {
+            direction: "top",
+            offset: [0, -8],
+          });
+          marker.on("click", () => onSelectPlace(p));
+          marker.addTo(group);
+        });
+    }
+
+    // 3. Vẽ các Bến tàu, Bến xe, Sân bay (Icon vuông nền tối chuẩn hình mẫu)
+    if (showTransitHubs) {
+      TRANSIT_HUBS.forEach((hub) => {
+        const symbol = hub.type === "ferry" ? "⚓" : hub.type === "airport" ? "✈️" : "🚌";
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
         const icon = L.divIcon({
           className: "custom-hub-marker",
           html: `<div style="width:24px;height:24px;border-radius:6px;background:#0f172a;color:#ffffff;font-size:12px;display:flex;align-items:center;justify-content:center;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${symbol}</div>`,
           iconSize: [24, 24],
           iconAnchor: [12, 12],
         });
+<<<<<<< HEAD
         const marker = L.marker([hub.lat, hub.lng], { icon });
         marker.bindPopup(
           `<div style="font-size:12px;"><b>${hub.name}</b><br/><span style="color:#0f766e;font-weight:600;">${HUB_META[hub.type].label}</span>${
@@ -1930,6 +2042,16 @@ function InteractiveAnGiangMap({
         );
         marker.addTo(group);
       });
+=======
+
+        const marker = L.marker([hub.lat, hub.lng], { icon });
+        marker.bindPopup(
+          `<div style="font-size:12px;"><b>${hub.name}</b><br/><span style="color:#475569;">${hub.note}</span></div>`
+        );
+        marker.addTo(group);
+      });
+    }
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
     // 4. Vẽ đường nối Lộ trình hành trình đang lập (nếu có)
     if (plannerPlaces.length > 1) {
@@ -1941,7 +2063,11 @@ function InteractiveAnGiangMap({
         opacity: 0.85,
       }).addTo(group);
     }
+<<<<<<< HEAD
   }, [leafletReady, places, plannerPlaces, transitHubs, visibleTabs, visibleHubs, onSelectPlace]);
+=======
+  }, [leafletReady, places, plannerPlaces, showDestinations, showAccommodations, showTransitHubs, onSelectPlace]);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   const handleFlyToMyLocation = () => {
     onLocateMe();
@@ -1978,6 +2104,7 @@ function InteractiveAnGiangMap({
         <div className="lg:col-span-4 space-y-4">
           {/* Thẻ 1: Bộ lọc lớp bản đồ + Nút Vị trí của tôi */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
+<<<<<<< HEAD
             <p className="text-[11px] font-bold uppercase text-slate-400">Điểm đến</p>
             {MAP_PLACE_LAYERS.map((layer) => {
               const count = places.filter((p) => p.isVisible && p.tab === layer.tab).length;
@@ -2024,6 +2151,37 @@ function InteractiveAnGiangMap({
                 </span>
               </label>
             ))}
+=======
+            <label className="flex items-center gap-3 text-sm font-medium text-slate-800 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showDestinations}
+                onChange={(e) => setShowDestinations(e.target.checked)}
+                className="w-4 h-4 accent-[#047857] rounded cursor-pointer"
+              />
+              <span>Điểm đến</span>
+            </label>
+
+            <label className="flex items-center gap-3 text-sm font-medium text-slate-800 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showAccommodations}
+                onChange={(e) => setShowAccommodations(e.target.checked)}
+                className="w-4 h-4 accent-[#047857] rounded cursor-pointer"
+              />
+              <span>Lưu trú</span>
+            </label>
+
+            <label className="flex items-center gap-3 text-sm font-medium text-slate-800 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showTransitHubs}
+                onChange={(e) => setShowTransitHubs(e.target.checked)}
+                className="w-4 h-4 accent-[#047857] rounded cursor-pointer"
+              />
+              <span>Bến tàu, bến xe, sân bay</span>
+            </label>
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
             <div className="pt-1">
               <button
@@ -2038,9 +2196,12 @@ function InteractiveAnGiangMap({
 
           {/* Thẻ 2: Bảng chú thích màu theo loại hình */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+<<<<<<< HEAD
             <p className="text-[11px] font-bold uppercase text-slate-400 mb-2">
               Màu điểm Tham quan
             </p>
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
             <div className="grid grid-cols-2 gap-y-2.5 gap-x-4 text-xs font-medium text-slate-700">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-[#0284c7] shrink-0" />
@@ -2229,7 +2390,10 @@ export default function AnGiangTravelGuideApp() {
     CAM_NANG: "Cẩm nang",
   });
 
+<<<<<<< HEAD
   const [transitHubs, setTransitHubs] = useState<TransitHub[]>(DEFAULT_TRANSIT_HUBS);
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [newRegionName, setNewRegionName] = useState<string>("");
   const [newRegionDisplay, setNewRegionDisplay] = useState<string>("");
   const [editingRegionId, setEditingRegionId] = useState<string | null>(null);
@@ -2241,6 +2405,7 @@ export default function AnGiangTravelGuideApp() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
   const isAdminAuthenticated = currentUser?.role === "ADMIN";
 
+<<<<<<< HEAD
   // Công tắt TOÀN HỆ THỐNG (chỉ Admin bật/tắt, lưu chung trong dữ liệu đồng bộ):
   // bật = người dùng không thấy các địa điểm chưa có ảnh. Admin vẫn thấy hết để bổ sung ảnh.
   const hideNoImage = tabLabels.HIDE_NO_IMAGE === "1";
@@ -2251,6 +2416,8 @@ export default function AnGiangTravelGuideApp() {
     [places, hideNoImage, isAdminAuthenticated]
   );
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [favorites, setFavorites] = useState<string[]>([]);
   const [savedTrips, setSavedTrips] = useState<SavedTripItem[]>([]);
   const [tripTitle, setTripTitle] = useState<string>("Chuyến đi khám phá An Giang");
@@ -2351,7 +2518,11 @@ export default function AnGiangTravelGuideApp() {
   // Địa điểm gần đây (khoảng cách đường chim bay từ tọa độ địa điểm đang xem)
   const nearbyData = useMemo(() => {
     if (!selectedPlace) return null;
+<<<<<<< HEAD
     const others = publicPlaces
+=======
+    const others = places
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
       .filter((p) => p.isVisible && p.id !== selectedPlace.id)
       .map((p) => ({
         place: p,
@@ -2365,7 +2536,11 @@ export default function AnGiangTravelGuideApp() {
       food: pick(["AM_THUC"]),
       stay: pick(["NHA_NGHI"]),
     };
+<<<<<<< HEAD
   }, [publicPlaces, selectedPlace]);
+=======
+  }, [places, selectedPlace]);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   const renderNearbySection = (
     title: string,
@@ -2431,6 +2606,7 @@ export default function AnGiangTravelGuideApp() {
     </div>
   );
 
+<<<<<<< HEAD
   // --- Đồng bộ dữ liệu dùng chung (nhiều người sửa cùng lúc) ---
   const syncedRef = useRef<SharedState | null>(null); // bản server gần nhất mà trình duyệt này biết
   const versionRef = useRef<number>(0);
@@ -2487,6 +2663,9 @@ export default function AnGiangTravelGuideApp() {
   };
 
   // 1. Tải dữ liệu lần đầu từ /api/state
+=======
+  // 1. Chỉ tải dữ liệu từ file shared-travel-data.json thông qua API (/api/state)
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   useEffect(() => {
     let isMounted = true;
     async function loadSharedServerData() {
@@ -2495,6 +2674,7 @@ export default function AnGiangTravelGuideApp() {
         if (!res.ok) throw new Error("Không thể đọc /api/state");
         const data = await res.json();
 
+<<<<<<< HEAD
         if (isMounted) {
           if (data) {
             applyServerState(data);
@@ -2502,14 +2682,31 @@ export default function AnGiangTravelGuideApp() {
             // Server chưa có file: coi như bản gốc là dữ liệu mặc định hiện tại
             syncedRef.current = { ...latestRef.current! };
           }
+=======
+        if (isMounted && data) {
+          if (Array.isArray(data.places)) setPlaces(data.places);
+          if (Array.isArray(data.regions)) setRegions(data.regions);
+          if (data.allRegionLabel) setAllRegionLabel(data.allRegionLabel);
+          if (data.tabLabels) setTabLabels((prev) => ({ ...prev, ...data.tabLabels }));
+          if (Array.isArray(data.users)) setUsers(data.users);
+          if (Array.isArray(data.reviews)) setReviews(data.reviews);
+          if (Array.isArray(data.savedTrips)) setSavedTrips(data.savedTrips);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
         }
 
         const localTrips = localStorage.getItem("ag_saved_trips_v2");
         if (isMounted && localTrips && (!data || !Array.isArray(data.savedTrips))) {
           setSavedTrips(JSON.parse(localTrips));
         }
+<<<<<<< HEAD
         const savedCurrentUser = localStorage.getItem("ag_current_user_v2");
         if (isMounted && savedCurrentUser) setCurrentUser(JSON.parse(savedCurrentUser));
+=======
+
+        const savedCurrentUser = localStorage.getItem("ag_current_user_v2");
+        if (isMounted && savedCurrentUser) setCurrentUser(JSON.parse(savedCurrentUser));
+
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
         const savedFavs = localStorage.getItem("ag_favorites_v2");
         if (isMounted && savedFavs) setFavorites(JSON.parse(savedFavs));
 
@@ -2523,11 +2720,17 @@ export default function AnGiangTravelGuideApp() {
     return () => {
       isMounted = false;
     };
+<<<<<<< HEAD
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
   // 2a. Thông tin riêng của từng người (đăng nhập, yêu thích) chỉ lưu trong trình duyệt, KHÔNG gửi lên server
+=======
+  }, []);
+
+  // 2. Tự động lưu mọi thay đổi vào file shared-travel-data.json
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   useEffect(() => {
     if (!isStorageLoaded) return;
     try {
@@ -2539,6 +2742,7 @@ export default function AnGiangTravelGuideApp() {
       localStorage.setItem("ag_favorites_v2", JSON.stringify(favorites));
       localStorage.setItem("ag_saved_trips_v2", JSON.stringify(savedTrips));
     } catch {}
+<<<<<<< HEAD
   }, [isStorageLoaded, currentUser, favorites, savedTrips]);
 
   // 2. Lưu: chỉ gửi phần thay đổi so với bản server gần nhất
@@ -2606,6 +2810,37 @@ export default function AnGiangTravelGuideApp() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStorageLoaded]);
+=======
+
+    // Chống mất dữ liệu: không ghi đè file bằng dữ liệu rỗng (VD: lần tải lỗi hoặc dữ liệu chưa kịp nạp)
+    if (places.length === 0 && regions.length === 0) return;
+
+    fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        places,
+        regions,
+        allRegionLabel,
+        tabLabels,
+        users,
+        reviews,
+        savedTrips,
+      }),
+    }).catch((err) => console.error("Lỗi lưu dữ liệu lên Server:", err));
+  }, [
+    isStorageLoaded,
+    places,
+    regions,
+    allRegionLabel,
+    tabLabels,
+    users,
+    reviews,
+    savedTrips,
+    currentUser,
+    favorites,
+  ]);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   // 2b. Sao lưu thêm 1 bản dữ liệu phụ (thư mục "backups"): khi mở web, khi tắt/rời web và mỗi 10 phút
   useEffect(() => {
@@ -2817,7 +3052,11 @@ export default function AnGiangTravelGuideApp() {
 
   // --- LỌC ĐỊA ĐIỂM HỖ TRỢ TÌM KIẾM KHÔNG DẤU ---
   const filteredPlaces = useMemo(() => {
+<<<<<<< HEAD
     return publicPlaces
+=======
+    return places
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
       .filter((p) => p.isVisible)
       .map((p) => {
         const osrmData = roadRoutes[p.id];
@@ -2856,15 +3095,22 @@ export default function AnGiangTravelGuideApp() {
         return matchRegion && matchTab && matchQuery;
       })
       .sort((a, b) => a.distanceKm - b.distanceKm);
+<<<<<<< HEAD
   }, [publicPlaces, roadRoutes, userLocation, selectedRegion, activeTab, searchQuery]);
+=======
+  }, [places, roadRoutes, userLocation, selectedRegion, activeTab, searchQuery]);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   // =====================================================================
   // BỘ LẬP HÀNH TRÌNH & DỰ TOÁN CHI PHÍ XÁC ĐỊNH
   // =====================================================================
   const [plannerDestIds, setPlannerDestIds] = useState<string[]>([]);
+<<<<<<< HEAD
   // Bộ lọc cho ô "Thêm điểm đến vào lộ trình": theo khu vực và loại hình
   const [plannerAddRegion, setPlannerAddRegion] = useState<string>("ALL");
   const [plannerAddTab, setPlannerAddTab] = useState<string>("ALL");
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [isRoundTrip] = useState<boolean>(true);
   const [plannerDays, setPlannerDays] = useState<number>(2);
   const [adultCount, setAdultCount] = useState<number>(4);
@@ -2875,17 +3121,28 @@ export default function AnGiangTravelGuideApp() {
   const [vehicleCount, setVehicleCount] = useState<number>(1);
   const [customRoadKm, setCustomRoadKm] = useState<number | null>(null);
 
+<<<<<<< HEAD
   const [fuelConsumption, setFuelConsumption] = useState<number>(7);
   const [fuelPrice, setFuelPrice] = useState<number>(24500);
   const [tollFees, setTollFees] = useState<number>(80000);
   const [parkingFees, setParkingFees] = useState<number>(50000);
+=======
+  const [fuelConsumption, setFuelConsumption] = useState<number>(6.5);
+  const [fuelPrice, setFuelPrice] = useState<number>(25000);
+  const [tollFees, setTollFees] = useState<number>(40000);
+  const [parkingFees, setParkingFees] = useState<number>(20000);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [rentalDailyPrice] = useState<number>(900000);
   const [adultFerryPrice] = useState<number>(340000);
   const [childFerryPrice] = useState<number>(240000);
   const [vehicleFerryFee] = useState<number>(150000);
   const [foodPerPersonDay, setFoodPerPersonDay] = useState<number>(250000);
   const [roomPricePerNight, setRoomPricePerNight] = useState<number>(800000);
+<<<<<<< HEAD
   const [roomCount, setRoomCount] = useState<number>(2);
+=======
+  const [roomCount] = useState<number>(2);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [contingencyPercent, setContingencyPercent] = useState<number>(10);
   const [expectedBudget, setExpectedBudget] = useState<number>(6000000);
 
@@ -3004,6 +3261,7 @@ export default function AnGiangTravelGuideApp() {
     expectedBudget,
   ]);
 
+<<<<<<< HEAD
   // --- LẬP HÀNH TRÌNH 4 BƯỚC: NHU CẦU → ĐIỂM ĐẾN → CHI PHÍ → KẾT QUẢ ---
   const [plannerStep, setPlannerStep] = useState<1 | 2 | 3 | 4>(1);
   const [originName, setOriginName] = useState<string>("Rạch Giá");
@@ -3386,6 +3644,8 @@ export default function AnGiangTravelGuideApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStorageLoaded]);
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const handleLoadBenchmarkTest = () => {
     setCustomRoadKm(120);
     setVehicleType("personal_car");
@@ -3412,8 +3672,50 @@ export default function AnGiangTravelGuideApp() {
     setPlannerDestIds(copy);
   };
 
+<<<<<<< HEAD
   // Mở lại chuyến đi đã lưu: nạp lại toàn bộ lựa chọn và mở thẳng trang kết quả
   const handleLoadSavedTrip = (trip: SavedTripItem) => applyTrip(trip);
+=======
+  // Lưu chuyến đi hiện tại
+  const handleSaveCurrentTrip = () => {
+    if (plannerDestIds.length === 0) {
+      alert("Vui lòng chọn ít nhất 1 địa điểm vào lộ trình trước khi lưu!");
+      return;
+    }
+    const newTrip: SavedTripItem = {
+      id: `trip-${Date.now()}`,
+      title: tripTitle.trim() || `Chuyến đi An Giang (${plannerDays} ngày)`,
+      createdAt: new Date().toLocaleString("vi-VN"),
+      owner: currentUser?.username || "Du khách",
+      plannerDays,
+      adultCount,
+      childCount,
+      vehicleType,
+      vehicleCount,
+      destIds: [...plannerDestIds],
+      roadKm: routeSummary.roadKm,
+      waterKm: routeSummary.waterKm,
+      totalCost: costBreakdown.grandTotal,
+      perPersonCost: costBreakdown.perPerson,
+    };
+
+    setSavedTrips((prev) => [newTrip, ...prev]);
+    setSaveTripSuccess(true);
+    setTimeout(() => setSaveTripSuccess(false), 3000);
+  };
+
+  // Mở lại chuyến đi đã lưu
+  const handleLoadSavedTrip = (trip: SavedTripItem) => {
+    setTripTitle(trip.title);
+    setPlannerDays(trip.plannerDays);
+    setAdultCount(trip.adultCount);
+    setChildCount(trip.childCount);
+    setVehicleType(trip.vehicleType);
+    setVehicleCount(trip.vehicleCount);
+    setPlannerDestIds(trip.destIds);
+    setCustomRoadKm(null);
+  };
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   // Xóa chuyến đi đã lưu
   const handleDeleteSavedTrip = (id: string) => {
@@ -3487,6 +3789,7 @@ export default function AnGiangTravelGuideApp() {
     tags: ["di_tich_lich_su", "van_hoa"] as string[],
   });
 
+<<<<<<< HEAD
   // Nén ảnh (tối đa 900px, JPEG) rồi tải lên server, trả về đường dẫn ngắn (VD: /api/upload/abc.jpg).
   // Dữ liệu chỉ lưu đường dẫn nên file shared-travel-data.json và mỗi lần lưu rất nhẹ.
   const uploadImageFile = (file: Blob): Promise<string> =>
@@ -3495,11 +3798,21 @@ export default function AnGiangTravelGuideApp() {
       const img = new Image();
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
+=======
+  const handleImageUploadFromComputer = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
         const canvas = document.createElement("canvas");
         const maxWidth = 900;
         const scale = img.width > maxWidth ? maxWidth / img.width : 1;
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
+<<<<<<< HEAD
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Không xử lý được ảnh"));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -3595,11 +3908,30 @@ export default function AnGiangTravelGuideApp() {
       setMigratingImages(false);
     }
     if (failed > 0) alert(`Có ${failed} ảnh chưa chuyển được, bạn bấm lại để thử tiếp.`);
+=======
+
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+          setAdminForm((prev) => ({ ...prev, imageUrl: compressedBase64 }));
+        }
+      };
+      if (typeof event.target?.result === "string") {
+        img.src = event.target.result;
+      }
+    };
+    reader.readAsDataURL(file);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   };
 
   // --- NHẬP EXCEL: HỎI LOẠI FILE TRƯỚC KHI NHẬP ---
   const [pendingExcelFile, setPendingExcelFile] = useState<File | null>(null);
+<<<<<<< HEAD
   const [importTab, setImportTab] = useState<FunctionalTab | "HUB">("THAM_QUAN");
+=======
+  const [importTab, setImportTab] = useState<FunctionalTab>("THAM_QUAN");
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   const [autoFindImages, setAutoFindImages] = useState<boolean>(true);
   const [imageFetchProgress, setImageFetchProgress] = useState<{
     done: number;
@@ -3691,6 +4023,7 @@ export default function AnGiangTravelGuideApp() {
     e.target.value = "";
   };
 
+<<<<<<< HEAD
   // Nhập Bến tàu / Bến xe / Sân bay từ Excel
   // Cột: Tên (bắt buộc) | Loại (Bến tàu / Bến xe / Sân bay) | Tọa Độ hoặc Vĩ độ + Kinh độ | Ghi chú | Địa chỉ
   const importHubsFromFile = (file: File) => {
@@ -3793,16 +4126,22 @@ export default function AnGiangTravelGuideApp() {
     XLSX.writeFile(wb, "mau-ben-tau-ben-xe-san-bay.xlsx");
   };
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   // Bước 2: xác nhận loại -> mới đọc file và nhập
   const handleConfirmImportExcel = () => {
     if (!pendingExcelFile) return;
     const file = pendingExcelFile;
+<<<<<<< HEAD
     if (importTab === "HUB") {
       setPendingExcelFile(null);
       importHubsFromFile(file);
       return;
     }
     const targetTab: FunctionalTab = importTab;
+=======
+    const targetTab = importTab;
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
     const tabMeta = IMPORT_TAB_OPTIONS.find((o) => o.id === targetTab)!;
     setPendingExcelFile(null);
 
@@ -3903,9 +4242,15 @@ export default function AnGiangTravelGuideApp() {
           if (!name) return;
 
           const address = String(getCell(row, "Địa chỉ", "Dia chi") || "An Giang").trim();
+<<<<<<< HEAD
           const region = canonicalRegionName(
             String(getCell(row, "Khu vực (xã/phường)", "Khu vực", "Khu vuc") || "An Giang")
           );
+=======
+          const region = String(
+            getCell(row, "Khu vực (xã/phường)", "Khu vực", "Khu vuc") || "An Giang"
+          ).trim();
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
           // Điểm đánh giá: lấy số đầu tiên trong ô, VD "4,5" hoặc "4,5 (1.519)" -> 4.5
           const ratingCell = getCell(row, "Đánh giá", "Danh gia", "Rating");
@@ -4031,7 +4376,12 @@ export default function AnGiangTravelGuideApp() {
                   ? `Đánh giá nổi bật từ du khách: "${prominentReview}"`
                   : description
                 : "",
+<<<<<<< HEAD
             imageUrl: DEFAULT_PLACE_IMAGE_URL,
+=======
+            imageUrl:
+              "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80",
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
             tags: [removeVietnameseTones(region).replace(/\s+/g, "_"), "du_lich_an_giang"],
             isVisible: true,
           });
@@ -4075,10 +4425,17 @@ export default function AnGiangTravelGuideApp() {
         if (freshPlaces.length > 0) {
           // Bổ sung các khu vực mới nếu chưa có
           setRegions((prev) => {
+<<<<<<< HEAD
             const existing = new Set(prev.map((r) => normalizeAreaName(r.name)));
             const added: RegionItem[] = [];
             newRegionNames.forEach((regName) => {
               if (!existing.has(normalizeAreaName(regName))) {
+=======
+            const existing = new Set(prev.map((r) => r.name.toLowerCase()));
+            const added: RegionItem[] = [];
+            newRegionNames.forEach((regName) => {
+              if (!existing.has(regName.toLowerCase())) {
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                 added.push({
                   id: `reg-excel-${Date.now()}-${added.length}`,
                   name: regName,
@@ -4157,7 +4514,13 @@ export default function AnGiangTravelGuideApp() {
       return;
     }
 
+<<<<<<< HEAD
     const finalImage = adminForm.imageUrl.trim() || DEFAULT_PLACE_IMAGE_URL;
+=======
+    const finalImage =
+      adminForm.imageUrl.trim() ||
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=80";
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
     const computedTicketPrice =
       adminForm.tab === "AM_THUC" ? normalizeAmountVND(Number(adminForm.ticketPrice)) : 0;
@@ -4237,6 +4600,7 @@ export default function AnGiangTravelGuideApp() {
   const [adminRegionFilter, setAdminRegionFilter] = useState<string>("ALL");
   const [adminTabFilter, setAdminTabFilter] = useState<string>("ALL");
   const [collapsedRegions, setCollapsedRegions] = useState<string[]>([]);
+<<<<<<< HEAD
   // Bật = chỉ hiện các địa điểm chưa có ảnh để bổ sung
   const [adminNoImageOnly, setAdminNoImageOnly] = useState<boolean>(false);
 
@@ -4248,6 +4612,11 @@ export default function AnGiangTravelGuideApp() {
   const adminFilteredPlaces = useMemo(() => {
     return places.filter((p) => {
       const matchNoImage = !adminNoImageOnly || isMissingImage(p);
+=======
+
+  const adminFilteredPlaces = useMemo(() => {
+    return places.filter((p) => {
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
       const matchRegion = adminRegionFilter === "ALL" || p.region === adminRegionFilter;
       const matchTab = adminTabFilter === "ALL" || p.tab === adminTabFilter;
       const matchQuery =
@@ -4255,9 +4624,15 @@ export default function AnGiangTravelGuideApp() {
         matchesVietnameseSearch(p.name, adminSearch) ||
         matchesVietnameseSearch(p.address, adminSearch) ||
         matchesVietnameseSearch(p.subCategory, adminSearch);
+<<<<<<< HEAD
       return matchNoImage && matchRegion && matchTab && matchQuery;
     });
   }, [places, adminRegionFilter, adminTabFilter, adminSearch, adminNoImageOnly]);
+=======
+      return matchRegion && matchTab && matchQuery;
+    });
+  }, [places, adminRegionFilter, adminTabFilter, adminSearch]);
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
   const adminGroups = useMemo(() => {
     const byRegion: Record<string, PlaceItem[]> = {};
@@ -4483,7 +4858,11 @@ export default function AnGiangTravelGuideApp() {
         <div className="flex-1 min-w-0">
           <SearchableRegionSelect
             regions={regions}
+<<<<<<< HEAD
             places={publicPlaces}
+=======
+            places={places}
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
             value={selectedRegion}
             onChange={(reg) => {
               setSelectedRegion(reg);
@@ -4529,7 +4908,11 @@ export default function AnGiangTravelGuideApp() {
           <div className="pt-1">
             <SearchableRegionSelect
               regions={regions}
+<<<<<<< HEAD
               places={publicPlaces}
+=======
+              places={places}
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
               value={selectedRegion}
               onChange={(reg) => {
                 setSelectedRegion(reg);
@@ -4628,7 +5011,11 @@ export default function AnGiangTravelGuideApp() {
           KHU VỰC NỘI DUNG PHẢI
          ===================================================================== */}
       <main
+<<<<<<< HEAD
         className="flex-1 min-w-0 relative min-h-screen md:ml-[235px] bg-cover bg-center md:bg-fixed flex flex-col justify-between"
+=======
+        className="flex-1 relative min-h-screen md:ml-[235px] bg-cover bg-center md:bg-fixed flex flex-col justify-between overflow-y-auto"
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
         style={{
           backgroundImage: `url('/bg-beach.jpg'), url('${HERO_BG_URL}')`,
         }}
@@ -4649,7 +5036,11 @@ export default function AnGiangTravelGuideApp() {
                     setActiveTab("THAM_QUAN");
                   }
                 }}
+<<<<<<< HEAD
                 placeholder="Tìm Kiếm"
+=======
+                placeholder="Tìm không dấu: tra su, nui sam, bun ca, phu quoc..."
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                 className="w-full pl-10 pr-20 py-2 rounded-full bg-white/95 backdrop-blur-md text-slate-800 placeholder-slate-400 text-sm font-medium shadow-md border border-white focus:outline-none focus:ring-2 focus:ring-sky-400"
               />
               <div className="absolute right-2 top-1.5 flex items-center gap-1">
@@ -4755,7 +5146,11 @@ export default function AnGiangTravelGuideApp() {
                     <Compass className="w-4 h-4 text-teal-700 mb-1.5" />
                     <span className="font-bold text-xs text-slate-900 block">Đi đâu?</span>
                     <span className="text-[10px] text-slate-500">
+<<<<<<< HEAD
                       Xem {publicPlaces.filter((p) => p.isVisible && p.tab === "THAM_QUAN").length} điểm
+=======
+                      Xem {places.filter((p) => p.isVisible && p.tab === "THAM_QUAN").length} điểm
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                       đến
                     </span>
                   </button>
@@ -4803,7 +5198,11 @@ export default function AnGiangTravelGuideApp() {
           {/* ĐỊA ĐIỂM NỔI TIẾNG (⭐) GẦN BẠN - MENU CHÍNH */}
           {activeTab === "HOME" && (
             <FeaturedPlacesHome
+<<<<<<< HEAD
               places={publicPlaces}
+=======
+              places={places}
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
               userLocation={userLocation}
               isAdmin={isAdminAuthenticated}
               onOpenPlace={openPlace}
@@ -4817,7 +5216,11 @@ export default function AnGiangTravelGuideApp() {
             activeTab !== "HANH_TRINH" &&
             activeTab !== "CAM_NANG" &&
             activeTab !== "ADMIN" && (
+<<<<<<< HEAD
               <div className="sticky top-[66px] md:top-4 z-20 bg-white/80 backdrop-blur-xl backdrop-saturate-150 px-3.5 py-2.5 sm:px-5 sm:py-3.5 rounded-3xl shadow-[0_8px_32px_rgba(15,23,42,0.22)] border border-white/70 ring-1 ring-black/5 space-y-2.5">
+=======
+              <div className="bg-white/90 backdrop-blur-md px-5 py-3.5 rounded-2xl shadow-md border border-white/80 space-y-2.5">
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className="font-bold text-slate-700">Chọn khu vực khám phá:</span>
@@ -4827,7 +5230,11 @@ export default function AnGiangTravelGuideApp() {
                         type="text"
                         value={quickRegionFilter}
                         onChange={(e) => setQuickRegionFilter(e.target.value)}
+<<<<<<< HEAD
                         placeholder="Tìm Kiếm"
+=======
+                        placeholder="Gõ vài chữ đầu (VD: rach, pq, oc...)"
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                         className="w-full pl-8 pr-6 py-1 rounded-lg border border-slate-300 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
                       />
                       {quickRegionFilter && (
@@ -4870,7 +5277,11 @@ export default function AnGiangTravelGuideApp() {
                         : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
                     }`}
                   >
+<<<<<<< HEAD
                     {allRegionLabel} ({publicPlaces.filter((p) => p.isVisible).length})
+=======
+                    {allRegionLabel} ({places.filter((p) => p.isVisible).length})
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                   </button>
 
                   {regions
@@ -4884,7 +5295,11 @@ export default function AnGiangTravelGuideApp() {
                       return (
                         featuredRegionNames.has(reg.name) ||
                         selectedRegion === reg.name ||
+<<<<<<< HEAD
                         publicPlaces.some((p) => p.isVisible && p.region === reg.name)
+=======
+                        places.some((p) => p.isVisible && p.region === reg.name)
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                       );
                     })
                     .sort((a, b) => {
@@ -4895,7 +5310,11 @@ export default function AnGiangTravelGuideApp() {
                       return rank(a) - rank(b);
                     })
                     .map((reg) => {
+<<<<<<< HEAD
                       const count = publicPlaces.filter(
+=======
+                      const count = places.filter(
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                         (p) => p.isVisible && p.region === reg.name
                       ).length;
                       const isSelected = selectedRegion === reg.name;
@@ -5105,9 +5524,14 @@ export default function AnGiangTravelGuideApp() {
              ================================================================= */}
           {activeTab === "BAN_DO" && (
             <InteractiveAnGiangMap
+<<<<<<< HEAD
               places={publicPlaces}
               plannerPlaces={selectedPlannerPlaces}
               transitHubs={transitHubs}
+=======
+              places={places}
+              plannerPlaces={selectedPlannerPlaces}
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
               userLocation={userLocation}
               onSelectPlace={(p) => openPlace(p.id)}
               onGoToPlanner={() => setActiveTab("HANH_TRINH")}
@@ -5126,6 +5550,7 @@ export default function AnGiangTravelGuideApp() {
           )}
 
           {/* =================================================================
+<<<<<<< HEAD
               CHẾ ĐỘ 2: LẬP HÀNH TRÌNH 4 BƯỚC, DỰ TOÁN CHI PHÍ & LƯU CHUYẾN ĐI
              ================================================================= */}
           {activeTab === "HANH_TRINH" && (
@@ -5908,11 +6333,375 @@ export default function AnGiangTravelGuideApp() {
 
               {/* DANH SÁCH CÁC CHUYẾN ĐI ĐÃ LƯU */}
               <div className="bg-[#F5F7F8] p-4 sm:p-5 rounded-[18px] shadow-xl ring-8 ring-[#DCE8F0]/90 border border-white/80 space-y-4">
+=======
+              CHẾ ĐỘ 2: LẬP HÀNH TRÌNH, DỰ TOÁN CHI PHÍ & LƯU CHUYẾN ĐI
+             ================================================================= */}
+          {activeTab === "HANH_TRINH" && (
+            <div className="space-y-6">
+              {routeSummary.hasWaterCrossing && (
+                <div className="bg-amber-50/95 backdrop-blur-md border border-amber-300 p-4 rounded-2xl flex items-start gap-3 text-xs text-amber-950 shadow">
+                  <Ship className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-sm text-amber-900">
+                      Hành trình có chặng vượt biển ra đảo ({routeSummary.waterKm} km đường thủy):
+                    </p>
+                    <p className="mt-0.5">
+                      Hệ thống tự động tách riêng chặng tàu cao tốc/phà từ bến Rạch Giá hoặc Hà Tiên
+                      và <strong>không tính tiêu hao xăng đường bộ</strong> cho chặng vượt biển này.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* THANH ĐẶT TÊN & NÚT LƯU CHUYẾN ĐI */}
+              <div className="bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-3xl shadow-xl border border-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="flex-1 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow">
+                    <Bookmark className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase">
+                      Tên kế hoạch chuyến đi của bạn
+                    </label>
+                    <input
+                      type="text"
+                      value={tripTitle}
+                      onChange={(e) => setTripTitle(e.target.value)}
+                      placeholder="Nhập tên chuyến đi (VD: Khám phá Rạch Giá - Phú Quốc 3N2Đ)..."
+                      className="w-full mt-0.5 px-3 py-1.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleSaveCurrentTrip}
+                    className="px-5 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer transition"
+                  >
+                    {saveTripSuccess ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>Đã lưu chuyến đi!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>Lưu chuyến đi ({plannerDestIds.length} điểm)</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="px-4 py-2.5 rounded-2xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>In PDF</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-7 bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">
+                        1. Điểm Dừng & Phương Tiện Di Chuyển
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Quãng đường bộ: <strong>{routeSummary.roadKm} km</strong>
+                        {routeSummary.waterKm > 0 && ` • Đường biển: ${routeSummary.waterKm} km`}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleLoadBenchmarkTest}
+                      className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold"
+                    >
+                      ⚡ Nạp mẫu kiểm thử chuẩn (120km • 6L/100km)
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Số ngày đi</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={plannerDays}
+                        onChange={(e) => setPlannerDays(Math.max(1, Number(e.target.value)))}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Người lớn</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={adultCount}
+                        onChange={(e) => setAdultCount(Math.max(1, Number(e.target.value)))}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Phương tiện</label>
+                      <select
+                        value={vehicleType}
+                        onChange={(e) => setVehicleType(e.target.value as any)}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 font-bold"
+                      >
+                        <option value="personal_car">Ô tô cá nhân</option>
+                        <option value="motorbike">Xe máy phượt</option>
+                        <option value="rental_car">Thuê ô tô</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Số lượng xe</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={vehicleCount}
+                        onChange={(e) => setVehicleCount(Math.max(1, Number(e.target.value)))}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-300 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                    <div>
+                      <label className="font-semibold text-slate-600 block mb-1">
+                        Quãng đường bộ (km)
+                      </label>
+                      <input
+                        type="number"
+                        value={routeSummary.roadKm}
+                        onChange={(e) => setCustomRoadKm(Math.max(0, Number(e.target.value)))}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold text-teal-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-slate-600 block mb-1">
+                        Tiêu hao (L/100km)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={fuelConsumption}
+                        onChange={(e) => setFuelConsumption(Math.max(0, Number(e.target.value)))}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-slate-600 block mb-1">
+                        Giá xăng (VND/lít)
+                      </label>
+                      <input
+                        type="number"
+                        step={500}
+                        value={fuelPrice}
+                        onChange={(e) => setFuelPrice(Math.max(0, Number(e.target.value)))}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="font-semibold text-slate-600 block mb-1">
+                        Cầu đường + Gửi xe
+                      </label>
+                      <input
+                        type="number"
+                        step={10000}
+                        value={tollFees + parkingFees}
+                        onChange={(e) => {
+                          setTollFees(Math.max(0, Number(e.target.value)));
+                          setParkingFees(0);
+                        }}
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-slate-500">
+                        Thứ tự các điểm tham quan ({selectedPlannerPlaces.length} điểm)
+                      </span>
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value && !plannerDestIds.includes(e.target.value)) {
+                            setPlannerDestIds((prev) => [...prev, e.target.value]);
+                          }
+                        }}
+                        value=""
+                        className="text-xs border border-teal-300 rounded-lg px-2.5 py-1 bg-teal-50 text-teal-900 font-semibold"
+                      >
+                        <option value="">+ Thêm điểm đến vào lộ trình...</option>
+                        {places
+                          .filter((p) => p.isVisible && !plannerDestIds.includes(p.id))
+                          .map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} ({p.region})
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    {selectedPlannerPlaces.length === 0 ? (
+                      <div className="p-6 text-center rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-xs text-slate-500">
+                        Chưa có địa điểm nào trong lộ trình. Hãy chọn từ menu phía trên hoặc bấm dấu{" "}
+                        <strong>+</strong> trên các thẻ địa điểm!
+                      </div>
+                    ) : (
+                      selectedPlannerPlaces.map((item, idx) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-6 h-6 rounded-full bg-teal-700 text-white font-bold flex items-center justify-center shrink-0">
+                              {idx + 1}
+                            </span>
+                            <div>
+                              <p className="font-bold text-slate-900 text-sm">{item.name}</p>
+                              <p className="text-slate-500">
+                                📍 {item.region} • 🕒 {item.openingHours}
+                                {item.tab === "AM_THUC" ? ` • 🍴 ${getFoodPriceText(item)}` : ""}
+                                {item.tab === "NHA_NGHI" ? ` • 💰 ${getStayPriceText(item)}` : ""}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => movePlannerStop(idx, -1)}
+                              className="p-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => movePlannerStop(idx, 1)}
+                              className="p-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-100"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                setPlannerDestIds((prev) => prev.filter((id) => id !== item.id))
+                              }
+                              className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="lg:col-span-5 bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-4 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
+                        <Fuel className="w-5 h-5 text-teal-600" />
+                        <span>2. Bảng Dự Toán Ngân Sách</span>
+                      </h3>
+                    </div>
+
+                    <div className="space-y-2.5 text-xs">
+                      <div className="flex justify-between p-2.5 rounded-xl bg-teal-50/80 border border-teal-200">
+                        <span>
+                          Nhiên liệu đường bộ ({routeSummary.roadKm} km •{" "}
+                          <strong>{costBreakdown.totalFuelLiters} lít</strong>):
+                        </span>
+                        <strong className="text-teal-900">
+                          {costBreakdown.totalFuelCost.toLocaleString("vi-VN")} VND
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between px-2.5 py-1.5">
+                        <span>Phí cầu đường & bến bãi ({vehicleCount} xe):</span>
+                        <strong>
+                          {(costBreakdown.totalTolls + costBreakdown.totalParking).toLocaleString(
+                            "vi-VN"
+                          )}{" "}
+                          VND
+                        </strong>
+                      </div>
+
+                      {routeSummary.hasWaterCrossing && (
+                        <div className="flex justify-between px-2.5 py-1.5 text-amber-800 bg-amber-50 rounded-lg">
+                          <span>Vé tàu cao tốc/phà ra đảo:</span>
+                          <strong>{costBreakdown.ferryCost.toLocaleString("vi-VN")} VND</strong>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between px-2.5 py-1.5 border-t border-slate-200 font-bold text-slate-900">
+                        <span>Tổng chi phí di chuyển:</span>
+                        <span className="text-teal-700">
+                          {costBreakdown.transportTotal.toLocaleString("vi-VN")} VND
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between px-2.5 py-1.5">
+                        <span>
+                          Ăn uống ({adultCount + childCount} người × {plannerDays} ngày):
+                        </span>
+                        <strong>{costBreakdown.foodTotal.toLocaleString("vi-VN")} VND</strong>
+                      </div>
+
+                      <div className="flex justify-between px-2.5 py-1.5">
+                        <span>
+                          Lưu trú ({Math.max(0, plannerDays - 1)} đêm × {roomCount} phòng):
+                        </span>
+                        <strong>
+                          {costBreakdown.accommodationTotal.toLocaleString("vi-VN")} VND
+                        </strong>
+                      </div>
+
+                      <div className="flex justify-between px-2.5 py-1.5">
+                        <span>Chi phí tại điểm:</span>
+                        <strong>{costBreakdown.ticketTotal.toLocaleString("vi-VN")} VND</strong>
+                      </div>
+
+                      <div className="flex justify-between px-2.5 py-1.5 text-slate-500">
+                        <span>Dự phòng phát sinh ({contingencyPercent}%):</span>
+                        <strong>{costBreakdown.contingencyCost.toLocaleString("vi-VN")} VND</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-900 text-white space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-300">TỔNG DỰ TOÁN TOÀN ĐOÀN:</span>
+                      <span className="text-xl font-extrabold text-amber-300">
+                        {costBreakdown.grandTotal.toLocaleString("vi-VN")} VND
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs border-t border-slate-700 pt-2">
+                      <span className="text-slate-300">
+                        Bình quân mỗi người ({adultCount + childCount} người):
+                      </span>
+                      <span className="text-base font-bold text-emerald-300">
+                        {costBreakdown.perPerson.toLocaleString("vi-VN")} VND/người
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* DANH SÁCH CÁC CHUYẾN ĐI ĐÃ LƯU */}
+              <div className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white space-y-4">
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                 <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-2">
                     <Bookmark className="w-5 h-5 text-teal-600" />
                     <h3 className="text-lg font-bold text-slate-900">
+<<<<<<< HEAD
                       Chuyến Đi Đã Lưu ({savedTrips.length})
+=======
+                      3. Danh Sách Chuyến Đi Đã Lưu ({savedTrips.length})
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                     </h3>
                   </div>
                 </div>
@@ -6601,6 +7390,7 @@ export default function AnGiangTravelGuideApp() {
                     3. Danh Sách Địa Điểm Theo Từng Địa Bàn ({adminFilteredPlaces.length}/
                     {places.length})
                   </h3>
+<<<<<<< HEAD
                   <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
                     <button
                       type="button"
@@ -6667,6 +7457,9 @@ export default function AnGiangTravelGuideApp() {
                           : `Chuyển ${base64ImageCount} ảnh cũ sang file`}
                       </button>
                     )}
+=======
+                  <div className="flex items-center gap-2 text-xs font-bold">
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                     <button
                       type="button"
                       onClick={() => setCollapsedRegions([])}
@@ -6762,9 +7555,13 @@ export default function AnGiangTravelGuideApp() {
                     {adminGroups.length === 0 && (
                       <tr>
                         <td colSpan={5} className="p-8 text-center text-xs text-slate-500">
+<<<<<<< HEAD
                           {adminNoImageOnly
                             ? "🎉 Không còn địa điểm nào thiếu ảnh trong bộ lọc này."
                             : "Không có địa điểm nào phù hợp với bộ lọc."}
+=======
+                          Không có địa điểm nào phù hợp với bộ lọc.
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                         </td>
                       </tr>
                     )}
@@ -6800,6 +7597,7 @@ export default function AnGiangTravelGuideApp() {
                       <tr key={p.id} className="hover:bg-slate-50">
                         <td className="p-4">
                           <div className="flex items-center gap-2.5">
+<<<<<<< HEAD
                             {isMissingImage(p) ? (
                               <>
                               <label
@@ -6834,6 +7632,14 @@ export default function AnGiangTravelGuideApp() {
                                 className="w-14 h-10 object-cover rounded-lg border border-slate-200"
                               />
                             )}
+=======
+                            <img
+                              src={p.imageUrl}
+                              alt={p.name}
+                              referrerPolicy="no-referrer"
+                              className="w-14 h-10 object-cover rounded-lg border border-slate-200"
+                            />
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                             <span className="bg-[#204E4A] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full">
                               {p.subCategory} {p.badgeIcon}
                             </span>
@@ -6898,7 +7704,11 @@ export default function AnGiangTravelGuideApp() {
                                 openingHours: p.openingHours,
                                 phone: p.phone,
                                 shortDesc: p.shortDesc,
+<<<<<<< HEAD
                                 imageUrl: isMissingImage(p) ? "" : p.imageUrl,
+=======
+                                imageUrl: p.imageUrl,
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                                 tags: p.tags,
                               });
                             }}
@@ -6941,6 +7751,7 @@ export default function AnGiangTravelGuideApp() {
                 </table>
               </div>
 
+<<<<<<< HEAD
               {/* QUẢN LÝ BẾN TÀU / BẾN XE / SÂN BAY TRÊN BẢN ĐỒ */}
               <div className="bg-white/95 backdrop-blur-md p-4 sm:p-6 rounded-3xl shadow-xl border border-white space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -6996,6 +7807,8 @@ export default function AnGiangTravelGuideApp() {
                 </div>
               </div>
 
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
               {/* DỌN DỮ LIỆU: ĐỊA ĐIỂM NGOÀI 102 XÃ / PHƯỜNG / ĐẶC KHU */}
               <div className="bg-white/95 backdrop-blur-md p-4 sm:p-6 rounded-3xl shadow-xl border border-white space-y-4">
                 <div>
@@ -7227,6 +8040,7 @@ export default function AnGiangTravelGuideApp() {
                   {importTab === opt.id && <Check className="w-4 h-4 ml-auto" />}
                 </button>
               ))}
+<<<<<<< HEAD
               <button
                 type="button"
                 onClick={() => setImportTab("HUB")}
@@ -7246,17 +8060,27 @@ export default function AnGiangTravelGuideApp() {
               {importTab === "HUB"
                 ? "Cột cần có: Tên, Loại (Bến tàu / Bến xe / Sân bay — bỏ trống thì tự nhận từ tên), Tọa Độ (VD: 10.0145, 105.0752) hoặc 2 cột Vĩ độ + Kinh độ. Cột Ghi chú, Địa chỉ không bắt buộc."
                 : importTab === "AM_THUC"
+=======
+            </div>
+
+            <p className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              {importTab === "AM_THUC"
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
                 ? "Cột cần có: Tên Địa Điểm, Địa chỉ, Khu vực, Đánh giá, Số đánh giá, Đánh Giá Nổi Bật, Tọa Độ + Giá Tiền của quán (hệ thống tính giá trung bình)."
                 : importTab === "THAM_QUAN"
                 ? "Cột cần có: Tên Địa Điểm, Địa chỉ, Khu vực, Đánh giá, Số đánh giá, Đánh Giá Nổi Bật, Tọa Độ + Mô tả về địa điểm tham quan."
                 : "Cột cần có: Tên Địa Điểm, Địa chỉ, Khu vực, Đánh giá, Số đánh giá, Đánh Giá Nổi Bật, Tọa Độ. Không cần cột nào thêm."}
             </p>
 
+<<<<<<< HEAD
             <label
               className={`${
                 importTab === "HUB" ? "hidden" : "flex"
               } items-start gap-2.5 p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-slate-800 cursor-pointer`}
             >
+=======
+            <label className="flex items-start gap-2.5 p-3 rounded-xl bg-sky-50 border border-sky-200 text-xs text-slate-800 cursor-pointer">
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
               <input
                 type="checkbox"
                 checked={autoFindImages}

@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
+<<<<<<< HEAD
 import { applyStateDelta, SharedState, StateDelta } from "../../../lib/sync";
+=======
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 
 const DATA_FILE_PATH =
   process.env.SHARED_DATA_PATH || path.join(process.cwd(), "shared-travel-data.json");
 const BACKUP_DIR = path.join(path.dirname(DATA_FILE_PATH), "backups");
 
+<<<<<<< HEAD
 // Hàng đợi: "đọc -> áp thay đổi -> ghi" chạy lần lượt, không bao giờ chồng nhau
 // (chỉ an toàn khi chạy 1 tiến trình Node; nếu chạy nhiều tiến trình cần khóa file/DB)
+=======
+// Hàng đợi: các lượt ghi chạy lần lượt, không bao giờ chồng nhau
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
 let writeQueue: Promise<unknown> = Promise.resolve();
 
 async function readLatestValidBackup(): Promise<any | null> {
@@ -16,7 +23,11 @@ async function readLatestValidBackup(): Promise<any | null> {
     const files = (await fs.readdir(BACKUP_DIR))
       .filter((f) => f.endsWith(".json"))
       .sort()
+<<<<<<< HEAD
       .reverse();
+=======
+      .reverse(); // tên có thời gian nên mới nhất đứng đầu
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
     for (const f of files) {
       try {
         const data = JSON.parse(await fs.readFile(path.join(BACKUP_DIR, f), "utf-8"));
@@ -27,12 +38,17 @@ async function readLatestValidBackup(): Promise<any | null> {
   return null;
 }
 
+<<<<<<< HEAD
 // Trả về: null = chưa có file; ném lỗi = đọc lỗi / hỏng mà không có backup
 async function loadCurrent(): Promise<SharedState | null> {
+=======
+export async function GET() {
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
   let raw: string;
   try {
     raw = await fs.readFile(DATA_FILE_PATH, "utf-8");
   } catch (err: any) {
+<<<<<<< HEAD
     if (err?.code === "ENOENT") return null;
     throw err;
   }
@@ -40,10 +56,22 @@ async function loadCurrent(): Promise<SharedState | null> {
     return JSON.parse(raw);
   } catch (err) {
     console.error("[/api/state] File JSON bị hỏng:", String(err));
+=======
+    if (err?.code === "ENOENT") return NextResponse.json(null);
+    return NextResponse.json({ error: "READ_FAILED", details: String(err) }, { status: 500 });
+  }
+
+  try {
+    return NextResponse.json(JSON.parse(raw), { headers: { "Cache-Control": "no-store" } });
+  } catch (err) {
+    console.error("[/api/state] File JSON bị hỏng:", String(err));
+    // Giữ lại bản hỏng để kiểm tra, rồi nạp từ sao lưu
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
     await fs.copyFile(DATA_FILE_PATH, DATA_FILE_PATH + `.corrupt-${Date.now()}`).catch(() => {});
     const backup = await readLatestValidBackup();
     if (backup) {
       console.warn("[/api/state] Đã khôi phục từ bản sao lưu gần nhất.");
+<<<<<<< HEAD
       return backup;
     }
     throw err;
@@ -115,6 +143,37 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json(
       { error: "Không thể lưu dữ liệu lên Server", details: msg },
+=======
+      return NextResponse.json(backup, { headers: { "Cache-Control": "no-store" } });
+    }
+    return NextResponse.json({ error: "CORRUPT_JSON", details: String(err) }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    const empty =
+      !body ||
+      ((!Array.isArray(body.places) || body.places.length === 0) &&
+        (!Array.isArray(body.regions) || body.regions.length === 0));
+    if (empty) return NextResponse.json({ ok: false, skipped: "EMPTY_DATA" });
+
+    const text = JSON.stringify(body, null, 2);
+    const job = writeQueue.then(async () => {
+      const tmp = `${DATA_FILE_PATH}.${process.pid}.${Date.now()}.tmp`;
+      await fs.writeFile(tmp, text, "utf-8");
+      await fs.rename(tmp, DATA_FILE_PATH);
+    });
+    writeQueue = job.catch(() => {}); // lỗi một lượt không làm kẹt hàng đợi
+    await job;
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Không thể lưu dữ liệu lên Server", details: String(err) },
+>>>>>>> 03d4000873ca1d029bc82f912125f5053d254185
       { status: 500 }
     );
   }
