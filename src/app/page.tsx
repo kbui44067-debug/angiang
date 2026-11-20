@@ -689,8 +689,6 @@ function SearchableRegionSelect({
         if (String(no) === q) startsWithList.push(reg);
         else if (String(no).startsWith(q)) includesList.push(reg);
       } else if (
-
-      if (
         cleanName.startsWith(q) ||
         cleanLabel.startsWith(q) ||
         initials.startsWith(q)
