@@ -1,33 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-
+// Nếu file thật của bạn đã có dòng import này (hoặc đường dẫn khác) thì giữ nguyên dòng cũ, bỏ dòng này
 import { applyStateDelta, SharedState, StateDelta } from "../../../lib/sync";
-
- 
 
 const DATA_FILE_PATH =
   process.env.SHARED_DATA_PATH || path.join(process.cwd(), "shared-travel-data.json");
 const BACKUP_DIR = path.join(path.dirname(DATA_FILE_PATH), "backups");
 
-
 // Hàng đợi: "đọc -> áp thay đổi -> ghi" chạy lần lượt, không bao giờ chồng nhau
 // (chỉ an toàn khi chạy 1 tiến trình Node; nếu chạy nhiều tiến trình cần khóa file/DB)
-
-// Hàng đợi: các lượt ghi chạy lần lượt, không bao giờ chồng nhau
- 
 let writeQueue: Promise<unknown> = Promise.resolve();
+let healQueue: Promise<any> = Promise.resolve();
 
 async function readLatestValidBackup(): Promise<any | null> {
   try {
     const files = (await fs.readdir(BACKUP_DIR))
       .filter((f) => f.endsWith(".json"))
       .sort()
-
       .reverse();
-
-      .reverse(); // tên có thời gian nên mới nhất đứng đầu
- 
     for (const f of files) {
       try {
         const data = JSON.parse(await fs.readFile(path.join(BACKUP_DIR, f), "utf-8"));
@@ -38,17 +29,38 @@ async function readLatestValidBackup(): Promise<any | null> {
   return null;
 }
 
+// Ghi file kiểu "ghi ra file tạm rồi đổi tên đè lên". Trên Windows, đổi tên đôi khi bị chặn tạm thời
+// (antivirus, OneDrive/Dropbox đang quét file) nên thử lại vài lần.
+async function writeFileAtomic(target: string, content: string) {
+  const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
+  const handle = await fs.open(tmp, "w");
+  try {
+    await handle.writeFile(content, "utf-8");
+    await handle.sync(); // đảm bảo dữ liệu đã xuống đĩa trước khi đổi tên
+  } finally {
+    await handle.close();
+  }
+  let lastErr: any;
+  for (let i = 0; i < 6; i++) {
+    try {
+      await fs.rename(tmp, target);
+      return;
+    } catch (err: any) {
+      lastErr = err;
+      if (!["EPERM", "EBUSY", "EACCES"].includes(err?.code)) break;
+      await new Promise((r) => setTimeout(r, 50 * (i + 1)));
+    }
+  }
+  await fs.unlink(tmp).catch(() => {});
+  throw lastErr;
+}
 
 // Trả về: null = chưa có file; ném lỗi = đọc lỗi / hỏng mà không có backup
 async function loadCurrent(): Promise<SharedState | null> {
-
-export async function GET() {
- 
   let raw: string;
   try {
     raw = await fs.readFile(DATA_FILE_PATH, "utf-8");
   } catch (err: any) {
-
     if (err?.code === "ENOENT") return null;
     throw err;
   }
@@ -56,24 +68,22 @@ export async function GET() {
     return JSON.parse(raw);
   } catch (err) {
     console.error("[/api/state] File JSON bị hỏng:", String(err));
-
-    if (err?.code === "ENOENT") return NextResponse.json(null);
-    return NextResponse.json({ error: "READ_FAILED", details: String(err) }, { status: 500 });
-  }
-
-  try {
-    return NextResponse.json(JSON.parse(raw), { headers: { "Cache-Control": "no-store" } });
-  } catch (err) {
-    console.error("[/api/state] File JSON bị hỏng:", String(err));
-    // Giữ lại bản hỏng để kiểm tra, rồi nạp từ sao lưu
- 
-    await fs.copyFile(DATA_FILE_PATH, DATA_FILE_PATH + `.corrupt-${Date.now()}`).catch(() => {});
-    const backup = await readLatestValidBackup();
-    if (backup) {
-      console.warn("[/api/state] Đã khôi phục từ bản sao lưu gần nhất.");
-
-      return backup;
-    }
+    // Chạy trong hàng đợi để không chồng với lần ghi khác, và CHỈ sửa file 1 lần
+    // (trước đây mỗi lần đọc lại sao chép 1 bản .corrupt và không sửa file nên log lặp mãi)
+    const healed = (healQueue = healQueue.then(async () => {
+      try {
+        // Có thể lần gọi trước đã sửa xong
+        return JSON.parse(await fs.readFile(DATA_FILE_PATH, "utf-8")) as SharedState;
+      } catch {}
+      const backup = await readLatestValidBackup();
+      if (!backup) return null;
+      await fs.copyFile(DATA_FILE_PATH, DATA_FILE_PATH + `.corrupt-${Date.now()}`).catch(() => {});
+      await writeFileAtomic(DATA_FILE_PATH, JSON.stringify(backup, null, 2));
+      console.warn("[/api/state] Đã khôi phục từ bản sao lưu gần nhất và ghi lại file dữ liệu.");
+      return backup as SharedState;
+    }));
+    const restored = await healed;
+    if (restored) return restored;
     throw err;
   }
 }
@@ -127,9 +137,9 @@ export async function POST(req: NextRequest) {
       const nowEmpty = next.places.length === 0 && next.regions.length === 0;
       if (hadData && nowEmpty) throw new Error("EMPTY_GUARD");
 
-      const tmp = `${DATA_FILE_PATH}.${process.pid}.${Date.now()}.tmp`;
-      await fs.writeFile(tmp, JSON.stringify(next, null, 2), "utf-8");
-      await fs.rename(tmp, DATA_FILE_PATH);
+      const json = JSON.stringify(next, null, 2);
+      JSON.parse(json); // chắc chắn nội dung sắp ghi là JSON hợp lệ
+      await writeFileAtomic(DATA_FILE_PATH, json);
       return next;
     });
     writeQueue = job.catch(() => {});
@@ -143,37 +153,6 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json(
       { error: "Không thể lưu dữ liệu lên Server", details: msg },
-
-      return NextResponse.json(backup, { headers: { "Cache-Control": "no-store" } });
-    }
-    return NextResponse.json({ error: "CORRUPT_JSON", details: String(err) }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-
-    const empty =
-      !body ||
-      ((!Array.isArray(body.places) || body.places.length === 0) &&
-        (!Array.isArray(body.regions) || body.regions.length === 0));
-    if (empty) return NextResponse.json({ ok: false, skipped: "EMPTY_DATA" });
-
-    const text = JSON.stringify(body, null, 2);
-    const job = writeQueue.then(async () => {
-      const tmp = `${DATA_FILE_PATH}.${process.pid}.${Date.now()}.tmp`;
-      await fs.writeFile(tmp, text, "utf-8");
-      await fs.rename(tmp, DATA_FILE_PATH);
-    });
-    writeQueue = job.catch(() => {}); // lỗi một lượt không làm kẹt hàng đợi
-    await job;
-
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    return NextResponse.json(
-      { error: "Không thể lưu dữ liệu lên Server", details: String(err) },
- 
       { status: 500 }
     );
   }
